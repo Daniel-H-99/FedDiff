@@ -114,7 +114,7 @@ def main():
     
     ckpt_dir = f'/home/server33/minyeong_workspace/FL-bench/out_class0/FedDiff/checkpoints'
     files = sorted(list(set([int(f.split('_')[2]) for f in os.listdir(ckpt_dir)])))
-    ckpt_name_list = [os.path.join(ckpt_dir, f"pathmnist_class0_{f}_custom") for f in files if (f % 400 == 0)]
+    ckpt_name_list = [os.path.join(ckpt_dir, f"pathmnist_class0_{f}_custom") for f in files if (f == 200)]
     
     # print(f'ckpt_name_list: {ckpt_name_list}')
     # while True:
@@ -132,9 +132,9 @@ def main():
     with open(f'tested_fid_fed_class0_client_{CID}.pkl', 'wb') as f:
         pkl.dump(fid_dict, f)
         
-    privacy_dict = calc_privacy_dict(ckpt_name_list)
-    with open(f'tested_privacy_fed_class0_client_{CID}.pkl', 'wb') as f:
-        pkl.dump(privacy_dict, f)
+    # privacy_dict = calc_privacy_dict(ckpt_name_list)
+    # with open(f'tested_privacy_fed_class0_client_{CID}.pkl', 'wb') as f:
+    #     pkl.dump(privacy_dict, f)
         
     print(f'done')
 

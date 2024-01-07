@@ -197,8 +197,8 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("-ge", "--global_epoch", type=int, default=30000)
     parser.add_argument("-le", "--local_epoch", type=int, default=1)
     parser.add_argument("-fe", "--finetune_epoch", type=int, default=0)
-    parser.add_argument("-tg", "--valid_gap", type=int, default=20)
-    parser.add_argument("-eg", "--test_gap", type=int, default=1000)
+    parser.add_argument("-tg", "--valid_gap", type=int, default=10000)
+    parser.add_argument("-eg", "--test_gap", type=int, default=10000)
     parser.add_argument("-ee", "--eval_test", type=int, default=1)
     parser.add_argument("-er", "--eval_train", type=int, default=0)
     parser.add_argument("-lr", "--local_lr", type=float, default=1e-3)
@@ -216,7 +216,7 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("--save_model", type=int, default=0)
     parser.add_argument("--save_fig", type=int, default=1)
     parser.add_argument("--save_metrics", type=int, default=1)
-    parser.add_argument("--save_gap", type=int, default=200)
+    parser.add_argument("--save_gap", type=int, default=50)
     parser.add_argument("--viz_win_name", type=str, required=False)
     parser.add_argument("-cfg", "--config_file", type=str, default="")
     parser.add_argument("--check_convergence", type=int, default=1)
@@ -251,11 +251,11 @@ class FedDiffServer:
                 partition = pickle.load(f)
         except:
             raise FileNotFoundError(f"Please partition {args.dataset} first.")
-        self.train_clients: List[int] = partition["separation"]["train"][0:1]
-        self.test_clients: List[int] = partition["separation"]["test"][0:1]
+        self.train_clients: List[int] = partition["separation"]["train"][:7]
+        self.test_clients: List[int] = partition["separation"]["test"][:7]
 
         # self.client_num: int = partition["separation"]["total"]
-        self.client_num: int = 1
+        self.client_num: int = 7
 
         # init model(s) parameters
         self.device = get_best_device(self.args.use_cuda)

@@ -16,7 +16,7 @@ from rich.console import Console
 from data.utils.datasets import BaseDataset
 
 PROJECT_DIR = Path(__file__).parent.parent.parent.absolute()
-OUT_DIR = PROJECT_DIR / "out_class0"
+OUT_DIR = PROJECT_DIR / "out_class0_trial2"
 TEMP_DIR = PROJECT_DIR / "temp"
 
 

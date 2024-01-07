@@ -7,7 +7,7 @@ sys.path.append(Path(__file__).parent.joinpath("src/server").absolute().as_posix
 
 
 def wandb_init():
-    wandb.init(project="pathvae", name="class0_trial_1")
+    wandb.init(project="pathvae", name="class0_trial_2")
     
 if __name__ == "__main__":
     if len(sys.argv) < 2:
