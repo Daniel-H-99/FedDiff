@@ -64,9 +64,9 @@ def calc_fid_dict(checkpoints):
             true_local_path = os.path.join(true_image_dir, f'{client_id}', 'train')
             syn_global_path = os.path.join(image_fid_dir, f'{epoch}', 'global', f'{client_id}')
             true_global_path = os.path.join(true_image_dir, 'all', 'train')
-            # res[f'local_local_client_{client_id}'] = calc_fid(syn_local_path, true_local_path)
+            res[f'local_local_client_{client_id}'] = calc_fid(syn_local_path, true_local_path)
             # res[f'local_global_client_{client_id}'] = calc_fid(syn_local_path, true_global_path)
-            res[f'global_global_client_{client_id}'] = calc_fid(syn_tmp_path, true_global_path)
+            # res[f'global_global_client_{client_id}'] = calc_fid(syn_global_path, true_global_path)
             # res[f'global_global_client_{client_id}'] = calc_fid(syn_global_path, true_global_path)
         wandb.log(res, step=epoch)
         output[epoch] = res
