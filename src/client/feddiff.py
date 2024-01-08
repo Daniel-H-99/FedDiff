@@ -199,7 +199,7 @@ class FedDiffClient:
         self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
         self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
         
-        L = 128 * 50
+        L = 64 * 10
         st = (L * e) % len(self.trainset.indices)
         self.trainset.indices = np.concatenate([self.trainset.indices, self.trainset.indices])[st: st + L]
     
@@ -235,6 +235,7 @@ class FedDiffClient:
         Returns:
             Dict[str, Dict[str, float]]: The logging info, which contains metric stats.
         """
+        eval=False
         before = {
             "train_loss": 0,
             "test_loss": 0,

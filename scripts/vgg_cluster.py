@@ -3,7 +3,7 @@ import json
 from PIL import Image
 import matplotlib.pyplot as plt
 import sys
-sys.path.append('/home/server36/minyeong_workspace/FL-bench')
+sys.path.append('/home/server33/minyeong_workspace/FL-bench')
 from data.utils.datasets import PathMNIST
 
 import torch
@@ -38,7 +38,7 @@ transform = transforms.Compose([
     transforms.Normalize(mean, std)]
 )
 
-data_path = 'data/pathmnist/raw'
+data_path = 'data/cifar10/raw'
 xdata = np.load(os.path.join(data_path, 'xdata.npy'))
 ydata = np.load(os.path.join(data_path, 'ydata.npy'))
 
@@ -68,7 +68,7 @@ split_indices = {}
 for i in range(N_MEANS):
     split_indices[i] = class0_indice[(labels == i).nonzero()[0]]
 
-with open('/home/server36/minyeong_workspace/FL-bench/data/pathmnist_class0/indices.pkl', 'wb') as f:
+with open('/home/server33/minyeong_workspace/FL-bench/data/cifar10_class0/indices.pkl', 'wb') as f:
     pkl.dump(split_indices, f)
 
 

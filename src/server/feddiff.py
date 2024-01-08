@@ -174,6 +174,7 @@ def get_feddiff_argparser() -> ArgumentParser:
             "pathmnist",
             "pathmnist_class0",
             "cifar10",
+            "cifar10_class0",
             "cifar100",
             "synthetic",
             "femnist",
@@ -205,7 +206,7 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("-mom", "--momentum", type=float, default=0.0)
     parser.add_argument("-wd", "--weight_decay", type=float, default=0.0)
     parser.add_argument("-vg", "--verbose_gap", type=int, default=1)
-    parser.add_argument("-bs", "--batch_size", type=int, default=128)
+    parser.add_argument("-bs", "--batch_size", type=int, default=64)
     parser.add_argument("-v", "--visible", type=int, default=0)
     parser.add_argument("--global_testset", type=int, default=0)
     parser.add_argument("--straggler_ratio", type=float, default=0)
@@ -324,8 +325,8 @@ class FedDiffServer:
             random.shuffle(self.clients_local_epoch)
 
 
-        self.NUM_TRAINER = 1
-        self.NUM_GPU = 1
+        self.NUM_TRAINER = 7
+        self.NUM_GPU = 7
         
         # To make sure all algorithms run through the same client sampling stream.
         # Some algorithms' implicit operations at client side may disturb the stream if sampling happens at each FL round's beginning.
@@ -405,7 +406,7 @@ class FedDiffServer:
 
         if default_trainer:
             self.trainers = [FedDiffClient(
-                deepcopy(self.model), self.args, OUT_DIR / self.algo / f"{self.args.dataset}_trainderid{i}_log.html", f'cuda:{self.train_clients[i]}', i
+                deepcopy(self.model), self.args, OUT_DIR / self.algo / f"{self.args.dataset}_trainderid{i}_log.html", f'cuda:{self.NUM_GPU - self.NUM_TRAINER + i}', i
             ) for i in range(self.NUM_TRAINER)]
             # print(f'type: {type(self.trainers[0].state_dict)}')
             # while True:
