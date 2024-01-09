@@ -44,7 +44,7 @@ transform = transforms.Compose([
 # xdata = np.load(os.path.join(data_path, 'xdata.npy'))
 # ydata = np.load(os.path.join(data_path, 'ydata.npy'))
 
-data_path = '/home/server33/minyeong_workspace/FL-bench/class0_images_fid/3200/local'
+data_path = '/home/server33/minyeong_workspace/FL-bench/images_fid/600/local'
 files = []
 data = []
 labels = []
@@ -103,7 +103,7 @@ for i in range(N_MEANS):
     plt.scatter(cluster[idx, 0], cluster[idx, 1], marker='.', label=i)
 
 plt.legend()
-plt.savefig('class0_gen_fed_tsne.png')
+plt.savefig('cifar10_class0_gen_fed_tsne.png')
 
 # dataset = PathMNIST(
 #     root= "data/pathmnist",
