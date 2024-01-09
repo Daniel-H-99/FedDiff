@@ -91,7 +91,7 @@ class FedDiffClient:
         self.init_personal_params_dict: Dict[str, torch.Tensor] = {
             key: param.clone().detach().cpu()
             for key, param in self.model.state_dict(keep_vars=True).items()
-            if not param.requires_grad or (len(self.personal_tag) > 0 and (self.personal_tag in key))
+            if not param.requires_grad or ((self.personal_tag is not None) and (self.personal_tag in key))
         }
         self.personal_params_name: List[str] =  list(self.init_personal_params_dict.keys())
         # print(f'pers param dict: {self.init_personal_params_dict.keys()}')
@@ -118,7 +118,7 @@ class FedDiffClient:
         os.makedirs(self.image_dir, exist_ok=True)
 
         label_dist = {}
-        with open('/home/server33/minyeong_workspace/FL-bench/data/pathmnist/all_stats.json', 'r') as f:
+        with open('/home/server36/minyeong_workspace/FL-bench/data/pathmnist/all_stats.json', 'r') as f:
             d = json.load(f)
             for k, v in d.items():
                 if k == 'sample per client':
@@ -621,19 +621,19 @@ class FedDiffClient:
             self.finetune()
             after = self.evaluate(test_flag=True)
             
-        
+         
         print(f'evaluating')
         self.model.base.model.eval()
-        local_save_path = os.path.join('/home/server33/minyeong_workspace/FL-bench/images_fid', f'{epoch}', 'local', f'{self.client_id}')
-        global_save_path = os.path.join('/home/server33/minyeong_workspace/FL-bench/images_fid', f'{epoch}', 'global', f'{self.client_id}')
-        adv_save_path = os.path.join('/home/server33/minyeong_workspace/FL-bench/images_fid', f'{epoch}', 'adv', f'{self.client_id}')
+        local_save_path = os.path.join('/home/server36/minyeong_workspace/FL-bench/images_fid', f'{epoch}', 'local', f'{self.client_id}')
+        global_save_path = os.path.join('/home/server36/minyeong_workspace/FL-bench/images_fid', f'{epoch}', 'global', f'{self.client_id}')
+        adv_save_path = os.path.join('/home/server36/minyeong_workspace/FL-bench/images_fid', f'{epoch}', 'adv', f'{self.client_id}')
         os.makedirs(local_save_path, exist_ok=True)
         os.makedirs(global_save_path, exist_ok=True)
         os.makedirs(adv_save_path, exist_ok=True)
-        fid_adv = self.model.evaluator.sample(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/ref_fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, adv=True, save_path=adv_save_path)['fid'][0]
-        fid_local = self.model.evaluator.sample(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/ref_fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, save_path=local_save_path)['fid'][0]
-        fid_global = self.model.evaluator.sample(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/ref_fid_stats_pathmnist.npz'], is_leader=True, save_path=global_save_path)['fid'][0]
-
+        # fid_adv = self.model.evaluator.sample(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server36/minyeong_workspace/FL-bench/data/pathmnist/ref_fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, adv=True, save_path=adv_save_path)['fid'][0]
+        fid_local = self.model.evaluator.sample(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server36/minyeong_workspace/FL-bench/data/pathmnist/ref_fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, save_path=local_save_path)['fid'][0]
+        fid_global = self.model.evaluator.sample(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server36/minyeong_workspace/FL-bench/data/pathmnist/ref_fid_stats_pathmnist.npz'], is_leader=True, save_path=global_save_path)['fid'][0]
+        fid_adv = fid_global
         eval_results = [fid_local, fid_global, fid_adv]
         print(f'[Trainer {self.trainer_id}] evaluated: {eval_results}')
         # while True:
@@ -695,9 +695,9 @@ class FedDiffClient:
         print(f'evaluating')
         self.model.base.model.eval()
         save_path = os.path.join(self.image_dir, f'{self.client_id}_{epoch}.png')
-        fid_adv = self.model.evaluator.eval(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, adv=True)['fid'][0]
-        fid_local = self.model.evaluator.eval(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, save_path=save_path)['fid'][0]
-        fid_global = self.model.evaluator.eval(self.model.base.sample_fn, np.ones_like(self.label_dist[self.client_id]) / len(self.label_dist[self.client_id]), [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist.npz'], is_leader=True)['fid'][0]
+        fid_adv = self.model.evaluator.eval(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server36/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, adv=True)['fid'][0]
+        fid_local = self.model.evaluator.eval(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server36/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, save_path=save_path)['fid'][0]
+        fid_global = self.model.evaluator.eval(self.model.base.sample_fn, np.ones_like(self.label_dist[self.client_id]) / len(self.label_dist[self.client_id]), [f'/home/server36/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist.npz'], is_leader=True)['fid'][0]
 
         eval_results = [fid_local, fid_global, fid_adv]
         print(f'evaluated: {eval_results}')

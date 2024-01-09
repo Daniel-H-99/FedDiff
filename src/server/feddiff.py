@@ -221,7 +221,7 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("--viz_win_name", type=str, required=False)
     parser.add_argument("-cfg", "--config_file", type=str, default="")
     parser.add_argument("--check_convergence", type=int, default=1)
-    parser.add_argument("--personal_tag", type=str, default="")
+    parser.add_argument("--personal_tag", type=str, default=None)
     parser.add_argument("--ckpt", type=str, default=None)
     return parser
 
