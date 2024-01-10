@@ -206,7 +206,7 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("-mom", "--momentum", type=float, default=0.0)
     parser.add_argument("-wd", "--weight_decay", type=float, default=0.0)
     parser.add_argument("-vg", "--verbose_gap", type=int, default=1)
-    parser.add_argument("-bs", "--batch_size", type=int, default=64)
+    parser.add_argument("-bs", "--batch_size", type=int, default=128)
     parser.add_argument("-v", "--visible", type=int, default=0)
     parser.add_argument("--global_testset", type=int, default=0)
     parser.add_argument("--straggler_ratio", type=float, default=0)
@@ -217,12 +217,12 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("--save_model", type=int, default=0)
     parser.add_argument("--save_fig", type=int, default=1)
     parser.add_argument("--save_metrics", type=int, default=1)
-    parser.add_argument("--save_gap", type=int, default=50)
+    parser.add_argument("--save_gap", type=int, default=1)
     parser.add_argument("--viz_win_name", type=str, required=False)
     parser.add_argument("-cfg", "--config_file", type=str, default="")
     parser.add_argument("--check_convergence", type=int, default=1)
-    parser.add_argument("--personal_tag", type=str, default=None)
-    parser.add_argument("--ckpt", type=str, default=None)
+    parser.add_argument("--personal_tag", type=str, default="")
+    parser.add_argument("--ckpt", type=str, default='/home/server36/minyeong_workspace/FL-bench/out_cifar10_phoenix_trial1/FedDiff/checkpoints/cifar10_6_custom')
     return parser
 
 
@@ -252,11 +252,11 @@ class FedDiffServer:
                 partition = pickle.load(f)
         except:
             raise FileNotFoundError(f"Please partition {args.dataset} first.")
-        self.train_clients: List[int] = partition["separation"]["train"][:7]
-        self.test_clients: List[int] = partition["separation"]["test"][:7]
+        self.train_clients: List[int] = partition["separation"]["train"][:20]
+        self.test_clients: List[int] = partition["separation"]["test"][:20]
 
         # self.client_num: int = partition["separation"]["total"]
-        self.client_num: int = 7
+        self.client_num: int = 20
 
         # init model(s) parameters
         self.device = get_best_device(self.args.use_cuda)
@@ -325,7 +325,7 @@ class FedDiffServer:
             random.shuffle(self.clients_local_epoch)
 
 
-        self.NUM_TRAINER = 7
+        self.NUM_TRAINER = 5
         self.NUM_GPU = 7
         
         # To make sure all algorithms run through the same client sampling stream.
@@ -338,7 +338,7 @@ class FedDiffServer:
             for _ in range(self.args.global_epoch)
         ]
         self.selected_clients: List[int] = []
-        self.current_epoch = 0
+        self.current_epoch = 9
         # For controlling behaviors of some specific methods while testing (not used by all methods)
         self.test_flag = False
 

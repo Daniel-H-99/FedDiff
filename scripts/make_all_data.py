@@ -4,9 +4,13 @@ import pickle as pkl
 from tqdm import tqdm
 from imageio import imwrite
 def main():
-    root = '/home/server36/minyeong_workspace/FL-bench/data/cifar10_class0/raw'
-    cid_list = list(range(7))
-    indices = pkl.load(open('/home/server36/minyeong_workspace/FL-bench/data/cifar10_class0/indices.pkl', 'rb'))
+    root = '/home/server36/minyeong_workspace/FL-bench/data/cifar10_class/raw'
+    cid_list = list(range(10))
+    try:
+        indices = pkl.load(open('/home/server36/minyeong_workspace/FL-bench/data/cifar10_class/indices.pkl', 'rb'))
+    except:
+        partition = pkl.load(open('/home/server36/minyeong_workspace/FL-bench/data/cifar10_class/partition.pkl', 'rb'))
+        indices = {int(k) : np.concatenate([partition['data_indices'][int(k)]['train'], partition['data_indices'][int(k)]['test']]) for k in range(len(partition['data_indices']))}
     all_train_idx = []
     all_test_idx = []
     data = np.load(os.path.join(root, 'xdata.npy'))
@@ -19,12 +23,12 @@ def main():
         idx_list = indices[cid]
         train_idx_list = idx_list[:int(0.9 * len(idx_list))]
         test_idx_list = idx_list[int(0.9 * len(idx_list)):]
-        # for idx in tqdm(train_idx_list):
-        #     save_path = os.path.join(train_dir, '{:05d}.png'.format(idx))
-        #     imwrite(save_path, data[idx])
-        # for idx in tqdm(test_idx_list):
-        #     save_path = os.path.join(test_dir, '{:05d}.png'.format(idx))
-        #     imwrite(save_path, data[idx])
+        for idx in tqdm(train_idx_list):
+            save_path = os.path.join(train_dir, '{:05d}.png'.format(idx))
+            imwrite(save_path, data[idx])
+        for idx in tqdm(test_idx_list):
+            save_path = os.path.join(test_dir, '{:05d}.png'.format(idx))
+            imwrite(save_path, data[idx])
         all_train_idx.append(np.random.permutation(train_idx_list)[:3000])
         all_test_idx.append(np.random.permutation(test_idx_list)[:3000])
     

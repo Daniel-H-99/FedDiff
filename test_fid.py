@@ -13,11 +13,11 @@ import pickle as pkl
 sys.path.append(Path(__file__).parent.joinpath("src/server").absolute().as_posix())
 
 image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/images_fid'
-true_image_dir = '/home/server36/minyeong_workspace/FL-bench/data/cifar10_class0/raw'
+true_image_dir = '/home/server36/minyeong_workspace/FL-bench/data/cifar10/raw'
 
 CID=0
 def init_wandb():
-    wandb.init(project='fids', name=f'[privacy2] phoenix_cifar10_class0_client_{CID}')
+    wandb.init(project='fids', name=f'(continued) phoenix_cifar10_client_{CID}')
     
 def load_models(cls, args, ckpt_name):
     args.ckpt = ckpt_name
@@ -56,7 +56,7 @@ def calc_fid_dict(checkpoints):
     output = {}
     for ckpt in checkpoints:
         res = {}
-        epoch = int(os.path.basename(ckpt).split('_')[2])
+        epoch = int(os.path.basename(ckpt).split('_')[1])
         for client_id in range(CID, CID + 1):
             print(f'trying client id: {client_id}')
             syn_local_path = os.path.join(image_fid_dir, f'{epoch}', 'local', f'{client_id}')
@@ -77,7 +77,7 @@ def calc_privacy_dict(checkpoints):
     output = {}
     for ckpt in checkpoints:
         res = {}
-        epoch = int(os.path.basename(ckpt).split('_')[2])
+        epoch = int(os.path.basename(ckpt).split('_')[1])
         for client_id in range(CID, CID + 1):
             print(f'trying client id: {client_id}')
             syn_local_path = os.path.join(image_fid_dir, f'{epoch}', 'local', f'{client_id}')
@@ -99,7 +99,7 @@ def calc_privacy2_dict(checkpoints):
     output = {}
     for ckpt in checkpoints:
         res = {}
-        epoch = int(os.path.basename(ckpt).split('_')[2])
+        epoch = int(os.path.basename(ckpt).split('_')[1])
         for client_id in range(CID, CID + 1):
             print(f'trying client id: {client_id}')
             syn_local_path = os.path.join(image_fid_dir, f'{epoch}', 'local', f'{client_id}')
@@ -147,9 +147,9 @@ def main():
     
     # print(f'loaded server')
     
-    ckpt_dir = f'/home/server36/minyeong_workspace/FL-bench/out_cifar10_class0_phoenix_trial1/FedDiff/checkpoints'
-    files = sorted(list(set([int(f.split('_')[2]) for f in os.listdir(ckpt_dir)])))
-    ckpt_name_list = [os.path.join(ckpt_dir, f"cifar10_class0_{f}_custom") for f in files if (f % 100 == 0)]
+    ckpt_dir = f'/home/server36/minyeong_workspace/FL-bench/out_cifar10_phoenix_trial1/FedDiff/checkpoints'
+    files = sorted(list(set([int(f.split('_')[1]) for f in os.listdir(ckpt_dir)])))
+    ckpt_name_list = [os.path.join(ckpt_dir, f"cifar10_{f}_custom") for f in files if f > 7 and f < 12]
     
     # print(f'ckpt_name_list: {ckpt_name_list}')
     # while True:
@@ -157,23 +157,23 @@ def main():
     
     # for ckpt_name in ckpt_name_list:
     #     server = load_models(server_class, args, ckpt_name)
-    #     log = server.calc_fid(int(os.path.basename(ckpt_name).split('_')[2]))
+    #     log = server.calc_fid(int(os.path.basename(ckpt_name).split('_')[1]))
     #     print(f'{log}')
     #     # break
     
     
     
-    # fid_dict = calc_fid_dict(ckpt_name_list)
-    # with open(f'tested_fid_phoenix_cifar10_class0_client.pkl', 'wb') as f:
-    #     pkl.dump(fid_dict, f)
+    fid_dict = calc_fid_dict(ckpt_name_list)
+    with open(f'tested_fid_phoenix_cifar10_client_{CID}.pkl', 'wb') as f:
+        pkl.dump(fid_dict, f)
         
     # privacy_dict = calc_privacy_dict(ckpt_name_list)
     # with open(f'tested_privacy_fed_class0_client_{CID}.pkl', 'wb') as f:
     #     pkl.dump(privacy_dict, f)
 
-    privacy_dict = calc_privacy2_dict(ckpt_name_list)
-    with open(f'tested_privacy2_phoenix_cifar10_class0_client_{CID}.pkl', 'wb') as f:
-        pkl.dump(privacy_dict, f)
+    # privacy_dict = calc_privacy2_dict(ckpt_name_list)
+    # with open(f'tested_privacy2_phoenix_cifar10_class0_client_{CID}.pkl', 'wb') as f:
+    #     pkl.dump(privacy_dict, f)
         
     print(f'done')
 
