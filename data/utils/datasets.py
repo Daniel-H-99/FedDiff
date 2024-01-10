@@ -769,6 +769,7 @@ DATASETS = {
     "cifar10": CIFAR10,
     "cifar10_class": CIFAR10,
     "cifar10_class0": CIFAR10,
+    "cifar10_niid2": CIFAR10,
     "cifar100": CIFAR100,
     "mnist": MNIST,
     "pathmnist": PathMNIST,

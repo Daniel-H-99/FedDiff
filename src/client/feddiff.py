@@ -196,12 +196,14 @@ class FedDiffClient:
     def load_train_dataset(self, e):
         """This function is for loading data indices for No.`self.client_id` client."""
         all_indices = np.concatenate([self.data_indices[self.client_id]["train"], self.data_indices[self.client_id]["test"]])
-        self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
-        self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
-        
+        # self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
+        # self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
+        self.trainset.indices = all_indices[:-1000]
+        self.testset.indices = all_indices[-1000:]
+          
         L = 128 * 2000
         st = (L * e) % len(self.trainset.indices)
-        self.trainset.indices = np.concatenate([self.trainset.indices] * 110)[st: st + L]
+        self.trainset.indices = np.concatenate([self.trainset.indices] * 52)[st: st + L]
     
         # self.trainset.indices = self.train_idc[self.client_id]
         # self.testset.indices = self.test_idc[self.client_id]
@@ -214,8 +216,10 @@ class FedDiffClient:
     def load_dataset(self):
         """This function is for loading data indices for No.`self.client_id` client."""
         all_indices = np.concatenate([self.data_indices[self.client_id]["train"], self.data_indices[self.client_id]["test"]])
-        self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
-        self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
+        # self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
+        # self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
+        self.trainset.indices = all_indices[:-10000]
+        self.testset.indices = all_indices[-10000:]
     
     
         # self.trainset.indices = self.train_idc[self.client_id]

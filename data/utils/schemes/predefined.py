@@ -26,7 +26,8 @@ def predefined(
         for k in range(label_num):
             np.random.shuffle(data_idx_for_each_label[k])
             client_w = np.zeros(client_num)
-            client_w[k] = 1
+            client_w[k] = 0.5
+            client_w[k - 1] = 0.5
             # dirichlet_w = dirichlet_w * (len(targets_numpy) / client_num) / ((len(targets_numpy) / client_num) - np.array([len(idx_j) for idx_j in data_indices])).clip(min=1)
             distrib = client_w
             # distrib = np.array(

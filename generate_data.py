@@ -152,6 +152,7 @@ if __name__ == "__main__":
             "pathmnist",
             "cifar10",
             "cifar10_class",
+            "cifar10_niid2",
             "cifar100",
             "synthetic",
             "femnist",
