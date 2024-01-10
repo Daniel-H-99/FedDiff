@@ -9,7 +9,7 @@ import wandb
 from pytorch_fid import fid_score, inception
 from src.utils.ddpm.ddpm_torch.metrics.fid_score import calculate_privacy_given_paths, calculate_privacy2_given_paths
 import pickle as pkl
-
+from scripts.gather_gen_images import todo
 sys.path.append(Path(__file__).parent.joinpath("src/server").absolute().as_posix())
 
 image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/images_fid'
@@ -149,23 +149,24 @@ def main():
     
     ckpt_dir = f'/home/server36/minyeong_workspace/FL-bench/out_cifar10_phoenix_trial1/FedDiff/checkpoints'
     files = sorted(list(set([int(f.split('_')[1]) for f in os.listdir(ckpt_dir)])))
-    ckpt_name_list = [os.path.join(ckpt_dir, f"cifar10_{f}_custom") for f in files if f > 7 and f < 12]
+    ckpt_name_list = [os.path.join(ckpt_dir, f"cifar10_{f}_custom") for f in files if f > 12 and f <= 16]
     
     # print(f'ckpt_name_list: {ckpt_name_list}')
     # while True:
     #     continue
     
-    # for ckpt_name in ckpt_name_list:
-    #     server = load_models(server_class, args, ckpt_name)
-    #     log = server.calc_fid(int(os.path.basename(ckpt_name).split('_')[1]))
-    #     print(f'{log}')
-    #     # break
+    for ckpt_name in ckpt_name_list:
+        server = load_models(server_class, args, ckpt_name)
+        log = server.calc_fid(int(os.path.basename(ckpt_name).split('_')[1]))
+        todo(os.path.join(image_fid_dir, f'{int(os.path.basename(ckpt_name).split("_")[1])}'))
+        print(f'{log}')
+        # break
     
     
     
-    fid_dict = calc_fid_dict(ckpt_name_list)
-    with open(f'tested_fid_phoenix_cifar10_client_{CID}.pkl', 'wb') as f:
-        pkl.dump(fid_dict, f)
+    # fid_dict = calc_fid_dict(ckpt_name_list)
+    # with open(f'tested_fid_phoenix_cifar10_client_{CID}.pkl', 'wb') as f:
+    #     pkl.dump(fid_dict, f)
         
     # privacy_dict = calc_privacy_dict(ckpt_name_list)
     # with open(f'tested_privacy_fed_class0_client_{CID}.pkl', 'wb') as f:
