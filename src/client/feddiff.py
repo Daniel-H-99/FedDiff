@@ -199,9 +199,9 @@ class FedDiffClient:
         self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
         self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
         
-        L = 64 * 10
+        L = 128 * 2000
         st = (L * e) % len(self.trainset.indices)
-        self.trainset.indices = np.concatenate([self.trainset.indices, self.trainset.indices])[st: st + L]
+        self.trainset.indices = np.concatenate([self.trainset.indices] * 110)[st: st + L]
     
         # self.trainset.indices = self.train_idc[self.client_id]
         # self.testset.indices = self.test_idc[self.client_id]
@@ -631,7 +631,7 @@ class FedDiffClient:
         os.makedirs(global_save_path, exist_ok=True)
         os.makedirs(adv_save_path, exist_ok=True)
         # fid_adv = self.model.evaluator.sample(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/ref_fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, adv=True, save_path=adv_save_path)['fid'][0]
-        fid_local = self.model.evaluator.sample(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/ref_fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, save_path=local_save_path)['fid'][0]
+        fid_local = self.model.evaluator.sample(self.model.base.sample_fn, self.label_dist[0], [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/ref_fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, save_path=local_save_path)['fid'][0]
         # fid_global = self.model.evaluator.sample(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/ref_fid_stats_pathmnist.npz'], is_leader=True, save_path=global_save_path)['fid'][0]
         fid_adv = fid_local
         fid_global = fid_local
