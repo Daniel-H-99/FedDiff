@@ -91,7 +91,7 @@ class FedDiffClient:
         self.init_personal_params_dict: Dict[str, torch.Tensor] = {
             key: param.clone().detach().cpu()
             for key, param in self.model.state_dict(keep_vars=True).items()
-            if not param.requires_grad or (len(self.personal_tag) > 0 and (self.personal_tag in key))
+            if not param.requires_grad or ((self.personal_tag is not None) and (self.personal_tag in key))
         }
         self.personal_params_name: List[str] =  list(self.init_personal_params_dict.keys())
         # print(f'pers param dict: {self.init_personal_params_dict.keys()}')
@@ -196,12 +196,14 @@ class FedDiffClient:
     def load_train_dataset(self, e):
         """This function is for loading data indices for No.`self.client_id` client."""
         all_indices = np.concatenate([self.data_indices[self.client_id]["train"], self.data_indices[self.client_id]["test"]])
-        self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
-        self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
-        
+        # self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
+        # self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
+        self.trainset.indices = all_indices[:-1000]
+        self.testset.indices = all_indices[-1000:]
+          
         L = 128 * 2000
         st = (L * e) % len(self.trainset.indices)
-        self.trainset.indices = np.concatenate([self.trainset.indices] * 110)[st: st + L]
+        self.trainset.indices = np.concatenate([self.trainset.indices] * 52)[st: st + L]
     
         # self.trainset.indices = self.train_idc[self.client_id]
         # self.testset.indices = self.test_idc[self.client_id]
@@ -214,8 +216,10 @@ class FedDiffClient:
     def load_dataset(self):
         """This function is for loading data indices for No.`self.client_id` client."""
         all_indices = np.concatenate([self.data_indices[self.client_id]["train"], self.data_indices[self.client_id]["test"]])
-        self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
-        self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
+        # self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
+        # self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
+        self.trainset.indices = all_indices[:-1000]
+        self.testset.indices = all_indices[-1000:]
     
     
         # self.trainset.indices = self.train_idc[self.client_id]
@@ -375,9 +379,9 @@ class FedDiffClient:
         
     def load_trainer(self, name):
         ppd_path = os.path.join(name + '_after.pt')
-        opt_path = os.path.join(name + '_after_opt.pt')
+        # opt_path = os.path.join(name + '_after_opt.pt')
         self.load_ppd(ppd_path)
-        self.load_opt(opt_path)
+        # self.load_opt(opt_path)
                                 
     def load_ppd(self, path):
         d = torch.load(path)
@@ -621,7 +625,7 @@ class FedDiffClient:
             self.finetune()
             after = self.evaluate(test_flag=True)
             
-        
+         
         print(f'evaluating')
         self.model.base.model.eval()
         local_save_path = os.path.join('/home/server33/minyeong_workspace/FL-bench/images_fid', f'{epoch}', 'local', f'{self.client_id}')

@@ -175,6 +175,7 @@ def get_feddiff_argparser() -> ArgumentParser:
             "pathmnist_class0",
             "cifar10",
             "cifar10_class0",
+            "cifar10_niid2",
             "cifar100",
             "synthetic",
             "femnist",
@@ -221,8 +222,8 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("--viz_win_name", type=str, required=False)
     parser.add_argument("-cfg", "--config_file", type=str, default="")
     parser.add_argument("--check_convergence", type=int, default=1)
-    parser.add_argument("--personal_tag", type=str, default="")
-    parser.add_argument("--ckpt", type=str, default='/home/server33/minyeong_workspace/FL-bench/out_cifar10_fed_trial1/FedDiff/checkpoints/cifar10_8_custom')
+    parser.add_argument("--personal_tag", type=str, default=None)
+    parser.add_argument("--ckpt", type=str, default='/home/server33/minyeong_workspace/FL-bench/out_cifar10_niid2_phoenix_trial1/FedDiff/checkpoints/cifar10_niid2_13_custom')
     return parser
 
 
@@ -252,11 +253,11 @@ class FedDiffServer:
                 partition = pickle.load(f)
         except:
             raise FileNotFoundError(f"Please partition {args.dataset} first.")
-        self.train_clients: List[int] = partition["separation"]["train"][:20]
-        self.test_clients: List[int] = partition["separation"]["test"][:20]
+        self.train_clients: List[int] = partition["separation"]["train"][:10]
+        self.test_clients: List[int] = partition["separation"]["test"][:10]
 
         # self.client_num: int = partition["separation"]["total"]
-        self.client_num: int = 20
+        self.client_num: int = 10
 
         # init model(s) parameters
         self.device = get_best_device(self.args.use_cuda)
@@ -332,13 +333,13 @@ class FedDiffServer:
         # Some algorithms' implicit operations at client side may disturb the stream if sampling happens at each FL round's beginning.
         self.client_sample_stream = [
             random.sample(
-                self.train_clients, max(1, int(self.NUM_TRAINER))
+                self.train_clients, max(1, len(self.train_clients))
                 # self.train_clients, max(1, int(self.client_num * self.args.join_ratio))
             )
             for _ in range(self.args.global_epoch)
         ]
         self.selected_clients: List[int] = []
-        self.current_epoch = 9
+        self.current_epoch = 13
         # For controlling behaviors of some specific methods while testing (not used by all methods)
         self.test_flag = False
 
@@ -406,6 +407,7 @@ class FedDiffServer:
 
         if default_trainer:
             self.trainers = [FedDiffClient(
+                # deepcopy(self.model), self.args, OUT_DIR / self.algo / f"{self.args.dataset}_trainderid{i}_log.html", f'cuda:{i % 2}', i
                 deepcopy(self.model), self.args, OUT_DIR / self.algo / f"{self.args.dataset}_trainderid{i}_log.html", f'cuda:{self.NUM_GPU - self.NUM_TRAINER + i}', i
             ) for i in range(self.NUM_TRAINER)]
             # print(f'type: {type(self.trainers[0].state_dict)}')

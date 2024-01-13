@@ -1,6 +1,8 @@
 out*
 data/cifar*
 data/pathmnist*
+data/MNIST
+data/mnist*
 samples
 src/utils/InST
 images/

@@ -10,6 +10,7 @@ CURRENT_DIR = Path(__file__).parent.absolute()
 
 from data.utils.datasets import DATASETS
 from data.utils.schemes import (
+    predefined,
     dirichlet,
     iid_partition,
     randomly_assign_classes,
@@ -47,6 +48,13 @@ def main(args):
         if not args.iid:
             if args.alpha > 0:  # Dirichlet(alpha)
                 partition, stats = dirichlet(
+                    dataset=dataset,
+                    client_num=args.client_num,
+                    alpha=args.alpha,
+                    least_samples=args.least_samples,
+                )
+            elif args.alpha < 0:
+                partition, stats = predefined(
                     dataset=dataset,
                     client_num=args.client_num,
                     alpha=args.alpha,
@@ -141,8 +149,11 @@ if __name__ == "__main__":
         type=str,
         choices=[
             "mnist",
+            "mnist_niid2",
             "pathmnist",
             "cifar10",
+            "cifar10_class",
+            "cifar10_niid2",
             "cifar100",
             "synthetic",
             "femnist",

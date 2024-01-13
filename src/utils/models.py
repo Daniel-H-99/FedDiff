@@ -84,6 +84,7 @@ INPUT_CHANNELS = {
 
 NUM_CLASSES = {
     "mnist": 10,
+    "mnist_niids": 10,
     "pathmnist": 9,
     "pathmnist_class0": 9,
     "medmnistS": 11,
@@ -95,6 +96,7 @@ NUM_CLASSES = {
     "femnist": 62,
     "cifar10": 10,
     "cifar10_class0": 10,
+    "cifar10_niid2": 10,
     "cinic10": 10,
     "cifar100": 100,
     "covid19": 4,
