@@ -28,16 +28,16 @@ def main():
         test_idx_list = idx_list[-2000:]
         print(f'train_idx_list: {len(train_idx_list)}')
         print(f'test_idx_list: {len(test_idx_list)}')
-        while True:
-            continue
+        # while True:
+        #     continue
         # for idx in tqdm(train_idx_list):
         #     save_path = os.path.join(train_dir, '{:05d}.png'.format(idx))
         #     imwrite(save_path, data[idx])
         # for idx in tqdm(test_idx_list):
         #     save_path = os.path.join(test_dir, '{:05d}.png'.format(idx))
         #     imwrite(save_path, data[idx])
-        all_train_idx.append(np.random.permutation(train_idx_list))
-        all_test_idx.append(np.random.permutation(test_idx_list))
+        all_train_idx.append(np.random.permutation(train_idx_list)[:10000])
+        all_test_idx.append(np.random.permutation(test_idx_list)[:10000])
     
     all_train_dir = os.path.join(root, 'all', 'train')
     all_test_dir = os.path.join(root, 'all', 'test')

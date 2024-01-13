@@ -12,8 +12,8 @@ def todo(root=f'/home/server33/minyeong_workspace/FL-bench/images_fid/10'):
     os.makedirs(local_save_dir)
 
     all_local_files = []
-    N = 30000
-    N_client = 10
+    N = 50000
+    N_client = 5
     N_per_client = [N // N_client] * N_client
     N_per_client.append(N - sum(N_per_client))
     for cid in range(N_client):

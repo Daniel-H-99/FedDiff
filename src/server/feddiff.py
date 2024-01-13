@@ -12,6 +12,8 @@ from typing import Dict, List, OrderedDict
 import wandb
 import torch.multiprocessing as mp
 import torch
+import subprocess
+
 torch.multiprocessing.set_sharing_strategy('file_system')
 # def work(model):
 #     print(f'trainer id: {model.model.base.num_classes}')
@@ -82,12 +84,11 @@ def work_fid(task):
     fid_local =[]
     fid_global = []
     fid_adv = []
-    
-    trainer, params, clients, epoch, _ = task
+    trainer, params, clients, epoch, _, save_dir = task
 
     for param, client_id in zip(params, clients):
         client_local_params = param
-        stats = trainer.calc_fid(client_id, client_local_params, epoch)
+        stats = trainer.calc_fid(client_id, client_local_params, epoch, save_dir)
 
         correct_before.append(stats["before"]["test_correct"])
         correct_after.append(stats["after"]["test_correct"])
@@ -201,7 +202,7 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("-le", "--local_epoch", type=int, default=1)
     parser.add_argument("-fe", "--finetune_epoch", type=int, default=0)
     parser.add_argument("-tg", "--valid_gap", type=int, default=10000)
-    parser.add_argument("-eg", "--test_gap", type=int, default=10000)
+    parser.add_argument("-eg", "--test_gap", type=int, default=1)
     parser.add_argument("-ee", "--eval_test", type=int, default=1)
     parser.add_argument("-er", "--eval_train", type=int, default=0)
     parser.add_argument("-lr", "--local_lr", type=float, default=1e-3)
@@ -235,7 +236,11 @@ class FedDiffServer:
         args: Namespace = None,
         unique_model=False,
         default_trainer=True,
+        for_eval=False,
+        wandb_pj=None
     ):
+        self.wandb_pj = wandb_pj
+        self.for_eval = for_eval
         self.args = get_feddiff_argparser().parse_args() if args is None else args
         self.algo = algo
         self.unique_model = unique_model
@@ -410,6 +415,8 @@ class FedDiffServer:
             self.trainers = [FedDiffClient(
                 # deepcopy(self.model), self.args, OUT_DIR / self.algo / f"{self.args.dataset}_trainderid{i}_log.html", f'cuda:{i % 2}', i
                 deepcopy(self.model), self.args, OUT_DIR / self.algo / f"{self.args.dataset}_trainderid{i}_log.html", f'cuda:{self.NUM_GPU - self.NUM_TRAINER + i}', i
+            ) if not self.for_eval else FedDiffClient(
+                deepcopy(self.model), self.args, OUT_DIR / self.algo / f"{self.args.dataset}_trainderid{i}_log.html", f'cuda:{i % (self.NUM_GPU - self.NUM_TRAINER)}', i
             ) for i in range(self.NUM_TRAINER)]
             # print(f'type: {type(self.trainers[0].state_dict)}')
             # while True:
@@ -437,6 +444,12 @@ class FedDiffServer:
         del self.model
         torch.cuda.empty_cache()
 
+        if not self.for_eval:
+            self.stdout = open(OUT_DIR / self.algo / 'test_stdout.log', 'w')
+            self.stderr = open(OUT_DIR / self.algo / 'test_stderr.log', 'w')
+        
+        self.proc = None
+            
     def get_epoch(self, f):
         return int(f.split('_')[2])
     
@@ -447,7 +460,7 @@ class FedDiffServer:
             epoch_opt_dict[self.get_epoch(f)] = epoch_opt_dict.get(self.get_epoch(f), []) + [f]
         assert len(epoch_opt_dict) <= 2, f'{len(epoch_opt_dict)}'
         if len(epoch_opt_dict) == 2:
-            assert len(epoch_opt_dict.values()[0]) == len(epoch_opt_dict.values()[1]), f'{len(epoch_opt_dict.values()[0])} vs {len(epoch_opt_dict.values()[1])}'
+            assert len(list(epoch_opt_dict.values())[0]) == len(list(epoch_opt_dict.values())[1]), f'{len(list(epoch_opt_dict.values())[0])} vs {len(list(epoch_opt_dict.values())[1])}'
             keys = sorted(list(epoch_opt_dict.keys()))
             for f in epoch_opt_dict[keys[0]]:
                 os.remove(os.path.join(save_dir, f))
@@ -508,7 +521,10 @@ class FedDiffServer:
                 self.save_trainers(E + 1, save_dir, before=False)
                 
             if (E + 1) % self.args.test_gap == 0:
-                self.test()
+                save_dir = OUT_DIR / self.algo / 'checkpoints' 
+                ckpt = save_dir / f"{self.args.dataset}_{E + 1}_{self.args.model}"
+                save_img_dir = OUT_DIR / self.algo / 'images_fid' 
+                self.test(ckpt, save_img_dir)
                 
         self.logger.log(
             f"{self.algo}'s average time taken by each global epoch: {int(avg_round_time // 60)} m {(avg_round_time % 60):.2f} s."
@@ -536,8 +552,8 @@ class FedDiffServer:
 
         return tasks
 
-    def generate_fid_task(self, client_ids, epoch):
-        tasks = [(self.trainers[i], [], [], epoch, ((self.current_epoch + 1) % self.args.verbose_gap) == 0) for i in range(len(self.trainers))]
+    def generate_fid_task(self, client_ids, epoch, save_dir):
+        tasks = [(self.trainers[i], [], [], epoch, ((self.current_epoch + 1) % self.args.verbose_gap) == 0, save_dir) for i in range(len(self.trainers))]
         for cid in client_ids:
             tasks[self.client_location(cid)][1].append(self.generate_client_params(cid))
             tasks[self.client_location(cid)][2].append(cid)
@@ -662,8 +678,9 @@ class FedDiffServer:
         num_samples = []
         fid_local, fid_global, fid_adv = [], [], []
         cids = []
-        
-        tasks = self.generate_fid_task(self.test_clients, epoch)
+        save_dir = OUT_DIR / self.algo / 'images_fid'
+        os.makedirs(save_dir, exist_ok=True)
+        tasks = self.generate_fid_task(self.test_clients, epoch, save_dir)
         # print(f'tasks: {tasks}')
         # while True:
         #     continue
@@ -735,98 +752,111 @@ class FedDiffServer:
         self.test_flag = False
         return log_dict
         
-    def test(self):
-        """The function for testing FL method's output (a single global model or personalized client models)."""
-        self.test_flag = True
-        loss_before, loss_after = [], []
-        correct_before, correct_after = [], []
-        num_samples = []
-        fid_local, fid_global, fid_adv = [], [], []
-        cids = []
         
-        tasks = self.generate_test_task(self.test_clients)
-        # print(f'tasks: {tasks}')
+    def test(self, checkpoint, save_dir):
+        if self.proc is not None:
+            self.proc.wait()
+            self.proc = None
+        pj = self.wandb_pj.project
+        id = self.wandb_pj.id
         # while True:
-        #     continue
-
-        with mp.Pool(self.NUM_TRAINER) as pool:
-            res = pool.map(work_test, tasks)
-        res = list(res)
+        #     print(f'checkpoint: {checkpoint}')
+        test_cmd = ['python', 'test_fid_api.py', 'feddiff', f'{checkpoint}', f'{save_dir}', f'{pj}', f'{id}', '-d', 'mnist_niid2', '--join_ratio', '1.0']
+        self.proc = subprocess.Popen(args=test_cmd, stdout=self.stdout, stderr=self.stderr)
+        # print(f'waiting')
+        # self.proc.wait()
+    # def test(self):
+    #     """The function for testing FL method's output (a single global model or personalized client models)."""
+    #     self.test_flag = True
+    #     loss_before, loss_after = [], []
+    #     correct_before, correct_after = [], []
+    #     num_samples = []
+    #     fid_local, fid_global, fid_adv = [], [], []
+    #     cids = []
         
-        # print(f'res shape: {len(res)}')
-        # print(f'clients: {[v[-1] for v in res]}')
-        # while True:
-        #     continue
-        for cb, ca, lb, la, ns, fl, fg, fa, cid in res:
-            correct_before.extend(cb)
-            correct_after.extend(ca)
-            loss_before.extend(lb)
-            loss_after.extend(la)
-            num_samples.extend(ns)
-            fid_local.extend(fl)
-            fid_global.extend(fg)
-            fid_adv.extend(fa)
-            cids.extend(cid)
-        print(f'res shape: {len(res)}')
-        print(f'fid_adv: {[v[-2] for v in res]}')
+    #     tasks = self.generate_test_task(self.test_clients)
+    #     # print(f'tasks: {tasks}')
+    #     # while True:
+    #     #     continue
 
-        # for client_id in self.test_clients:
-        #     client_local_params = self.generate_client_params(client_id)
-        #     stats = self.trainer.test(client_id, client_local_params)
-
-        #     correct_before.append(stats["before"]["test_correct"])
-        #     correct_after.append(stats["after"]["test_correct"])
-        #     loss_before.append(stats["before"]["test_loss"])
-        #     loss_after.append(stats["after"]["test_loss"])
-        #     num_samples.append(stats["before"]["test_size"])
-
-        loss_before = torch.tensor(loss_before)
-        loss_after = torch.tensor(loss_after)
-        correct_before = torch.tensor(correct_before)
-        correct_after = torch.tensor(correct_after)
-        num_samples = torch.tensor(num_samples)
-
-
-
-        loss_before = (num_samples * loss_before).sum() / num_samples.sum()
-        loss_after = (num_samples * loss_after).sum() / num_samples.sum()
+    #     with mp.Pool(self.NUM_TRAINER) as pool:
+    #         res = pool.map(work_test, tasks)
+    #     res = list(res)
         
-        self.test_results[self.current_epoch + 1] = {
-            "loss": "{:.4f} -> {:.4f}".format(
-                loss_before,
-                loss_after,
-            ),
-            "accuracy": "{:.2f}% -> {:.2f}%".format(
-                correct_before.sum() / num_samples.sum() * 100,
-                correct_after.sum() / num_samples.sum() * 100,
-            ),
-        }
-        
-        
-        log_dict = {"epoch": self.current_epoch + 1, "epoch_loss": loss_before}
-        
-        fid_local_dict = {f'fid_local_client_{k}': v for k, v in zip(cids, fid_local)}
-        fid_global_dict = {f'fid_global_client_{k}': v for k, v in zip(cids, fid_global)}
-        fid_adv_dict = {f'fid_adv_client_{k}': v for k, v in zip(cids, fid_adv)}
-        fid_local_avg = sum(fid_local) / len(fid_local)
-        fid_global_avg = sum(fid_global) / len(fid_global)
-        fid_adv_avg = sum(fid_adv) / len(fid_adv)
-        fid_avg_dict = {
-            "fid_local_avg": fid_local_avg,
-            "fid_global_avg": fid_global_avg,
-            "fid_adv_avg": fid_adv_avg,
-        }
-        log_dict.update(fid_local_dict)
-        log_dict.update(fid_global_dict)
-        log_dict.update(fid_adv_dict)
-        log_dict.update(fid_avg_dict)
+    #     # print(f'res shape: {len(res)}')
+    #     # print(f'clients: {[v[-1] for v in res]}')
+    #     # while True:
+    #     #     continue
+    #     for cb, ca, lb, la, ns, fl, fg, fa, cid in res:
+    #         correct_before.extend(cb)
+    #         correct_after.extend(ca)
+    #         loss_before.extend(lb)
+    #         loss_after.extend(la)
+    #         num_samples.extend(ns)
+    #         fid_local.extend(fl)
+    #         fid_global.extend(fg)
+    #         fid_adv.extend(fa)
+    #         cids.extend(cid)
+    #     print(f'res shape: {len(res)}')
+    #     print(f'fid_adv: {[v[-2] for v in res]}')
 
-        self.test_results[self.current_epoch + 1].update(log_dict)
+    #     # for client_id in self.test_clients:
+    #     #     client_local_params = self.generate_client_params(client_id)
+    #     #     stats = self.trainer.test(client_id, client_local_params)
+
+    #     #     correct_before.append(stats["before"]["test_correct"])
+    #     #     correct_after.append(stats["after"]["test_correct"])
+    #     #     loss_before.append(stats["before"]["test_loss"])
+    #     #     loss_after.append(stats["after"]["test_loss"])
+    #     #     num_samples.append(stats["before"]["test_size"])
+
+    #     loss_before = torch.tensor(loss_before)
+    #     loss_after = torch.tensor(loss_after)
+    #     correct_before = torch.tensor(correct_before)
+    #     correct_after = torch.tensor(correct_after)
+    #     num_samples = torch.tensor(num_samples)
+
+
+
+    #     loss_before = (num_samples * loss_before).sum() / num_samples.sum()
+    #     loss_after = (num_samples * loss_after).sum() / num_samples.sum()
         
-        wandb.log(log_dict)
-        # while True:
-        #     continue
-        self.test_flag = False
+    #     self.test_results[self.current_epoch + 1] = {
+    #         "loss": "{:.4f} -> {:.4f}".format(
+    #             loss_before,
+    #             loss_after,
+    #         ),
+    #         "accuracy": "{:.2f}% -> {:.2f}%".format(
+    #             correct_before.sum() / num_samples.sum() * 100,
+    #             correct_after.sum() / num_samples.sum() * 100,
+    #         ),
+    #     }
+        
+        
+    #     log_dict = {"epoch": self.current_epoch + 1, "epoch_loss": loss_before}
+        
+    #     fid_local_dict = {f'fid_local_client_{k}': v for k, v in zip(cids, fid_local)}
+    #     fid_global_dict = {f'fid_global_client_{k}': v for k, v in zip(cids, fid_global)}
+    #     fid_adv_dict = {f'fid_adv_client_{k}': v for k, v in zip(cids, fid_adv)}
+    #     fid_local_avg = sum(fid_local) / len(fid_local)
+    #     fid_global_avg = sum(fid_global) / len(fid_global)
+    #     fid_adv_avg = sum(fid_adv) / len(fid_adv)
+    #     fid_avg_dict = {
+    #         "fid_local_avg": fid_local_avg,
+    #         "fid_global_avg": fid_global_avg,
+    #         "fid_adv_avg": fid_adv_avg,
+    #     }
+    #     log_dict.update(fid_local_dict)
+    #     log_dict.update(fid_global_dict)
+    #     log_dict.update(fid_adv_dict)
+    #     log_dict.update(fid_avg_dict)
+
+    #     self.test_results[self.current_epoch + 1].update(log_dict)
+        
+    #     wandb.log(log_dict)
+    #     # while True:
+    #     #     continue
+    #     self.test_flag = False
 
     @torch.no_grad()
     def update_client_params(self, client_params_cache: List[List[torch.Tensor]]):

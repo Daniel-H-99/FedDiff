@@ -13,16 +13,20 @@ from scripts.gather_gen_images import todo
 import argparse
 sys.path.append(Path(__file__).parent.joinpath("src/server").absolute().as_posix())
 
-image_fid_dir = '/home/server33/minyeong_workspace/FL-bench/images_fid'
-true_image_dir = '/home/server33/minyeong_workspace/FL-bench/data/cifar10_niid2/raw'
+# image_fid_dir = '/home/server33/minyeong_workspace/FL-bench/images_fid'
+true_image_dir = '/home/server33/minyeong_workspace/FL-bench/data/mnist_niid2/raw'
 
 CID=0
-def init_wandb():
-    wandb.init(project='fids', name=f'phoenix_cifar10_niid2_client{CID}')
+def init_wandb(pj, name=None, id=None):
+    assert name is not None or id is not None
+    if id is not None:
+        wandb.init(project=pj, id=id, resume='must')
+    else:
+        wandb.init(project=pj, name=name)
     
 def load_models(cls, args, ckpt_name):
     args.ckpt = ckpt_name
-    server = cls(args=args)
+    server = cls(args=args, for_eval=True)
     return server
 
 def calc_privacy(path_1, path_2):
@@ -64,8 +68,8 @@ def calc_fid_dict_external(src_path, tgt_path):
 
     return output
 
-def calc_fid_dict(checkpoints):
-    init_wandb()
+def calc_fid_dict(checkpoints, pj, id,  image_fid_dir):
+    init_wandb(pj=pj, id=id)
     output = {}
     for ckpt in checkpoints:
         res = {}
@@ -77,7 +81,7 @@ def calc_fid_dict(checkpoints):
             syn_all_path = os.path.join(image_fid_dir, f'{epoch}', 'local', 'all')
             true_local_path = os.path.join(true_image_dir, f'{client_id}', 'train')
             syn_global_path = os.path.join(image_fid_dir, f'{epoch}', 'global', f'{client_id}')
-            true_global_path = os.path.join(true_image_dir, 'all_30000', 'train')
+            true_global_path = os.path.join(true_image_dir, 'all_10000', 'train')
             # res[f'local_local_client_{client_id}'] = calc_fid(syn_local_path, true_local_path)
             # res[f'local_global_client_{client_id}'] = calc_fid(syn_local_path, true_global_path)
             res[f'global_global_client_{client_id}'] = calc_fid(syn_all_path, true_global_path)
@@ -139,7 +143,11 @@ def main():
             "Need to assign a method. Run like `python main.py <method> [args ...]`, e.g., python main.py fedavg -d cifar10 -m lenet5`"
         )
     method = sys.argv[1]
-    args_list = sys.argv[2:]
+    checkpoint = sys.argv[2]
+    image_fid_dir = sys.argv[3]
+    pj = sys.argv[4]
+    id = sys.argv[5]
+    args_list = sys.argv[6:]
 
     module = importlib.import_module(method)
     try:
@@ -161,19 +169,20 @@ def main():
     
     # print(f'loaded server')
     
-    ckpt_dir = f'/home/server33/minyeong_workspace/FL-bench/out_cifar10_niid2_phoenix_trial1/FedDiff/checkpoints'
-    files = sorted(list(set([int(f.split('_')[2]) for f in os.listdir(ckpt_dir) ])))
-    ckpt_name_list = [os.path.join(ckpt_dir, f"cifar10_niid2_{f}_custom") for f in files if f < 13]
+    # ckpt_dir = f'/home/server33/minyeong_workspace/FL-bench/out_cifar10_niid2_phoenix_trial1/FedDiff/checkpoints'
+    # files = sorted(list(set([int(f.split('_')[2]) for f in os.listdir(ckpt_dir) ])))
+    # ckpt_name_list = [os.path.join(ckpt_dir, f"cifar10_niid2_{f}_custom") for f in files if f < 13]
     
     # print(f'ckpt_name_list: {ckpt_name_list}')
     # while True:
     #     continue
     
+    ckpt_name_list = [checkpoint]
     for ckpt_name in ckpt_name_list:
         server = load_models(server_class, args, ckpt_name)
         log = server.calc_fid(int(os.path.basename(ckpt_name).split('_')[2]))
         todo(os.path.join(image_fid_dir, f'{int(os.path.basename(ckpt_name).split("_")[2])}'))
-        print(f'{log}')
+        # print(f'{log}')
     
     
     # cifar_src_path = '/home/server33/minyeong_workspace/ddpm-torch/images/eval/cifar10/cifar10_2040_ddim'
@@ -187,7 +196,7 @@ def main():
 
 
     
-    fid_dict = calc_fid_dict(ckpt_name_list)
+    fid_dict = calc_fid_dict(ckpt_name_list, pj, id, img_fid_dir)
     with open(f'tested_fid_phoenix_cifar10_niid2_client_{CID}.pkl', 'wb') as f:
         pkl.dump(fid_dict, f)
 

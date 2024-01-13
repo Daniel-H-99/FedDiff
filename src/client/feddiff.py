@@ -201,7 +201,7 @@ class FedDiffClient:
         self.trainset.indices = all_indices[:-1000]
         self.testset.indices = all_indices[-1000:]
           
-        L = 128 * 2000
+        L = 128 * 1
         st = (L * e) % len(self.trainset.indices)
         self.trainset.indices = np.concatenate([self.trainset.indices] * 52)[st: st + L]
     
@@ -595,7 +595,7 @@ class FedDiffClient:
         }
 
     def calc_fid(
-        self, client_id: int, new_parameters: OrderedDict[str, torch.Tensor], epoch: int
+        self, client_id: int, new_parameters: OrderedDict[str, torch.Tensor], epoch: int, save_dir
     ) -> Dict[str, Dict[str, float]]:
         """Test function. Only be activated while in FL test round.
 
@@ -628,9 +628,9 @@ class FedDiffClient:
          
         print(f'evaluating')
         self.model.base.model.eval()
-        local_save_path = os.path.join('/home/server33/minyeong_workspace/FL-bench/images_fid', f'{epoch}', 'local', f'{self.client_id}')
-        global_save_path = os.path.join('/home/server33/minyeong_workspace/FL-bench/images_fid', f'{epoch}', 'global', f'{self.client_id}')
-        adv_save_path = os.path.join('/home/server33/minyeong_workspace/FL-bench/images_fid', f'{epoch}', 'adv', f'{self.client_id}')
+        local_save_path = save_dir / f'{epoch}' / 'local' / f'{self.client_id}'
+        global_save_path = save_dir / f'{epoch}' / 'global' / f'{self.client_id}'
+        adv_save_path =save_dir / f'{epoch}' / 'adv' / f'{self.client_id}'
         os.makedirs(local_save_path, exist_ok=True)
         os.makedirs(global_save_path, exist_ok=True)
         os.makedirs(adv_save_path, exist_ok=True)

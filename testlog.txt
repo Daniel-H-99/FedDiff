@@ -1,0 +1,136 @@
+server device: cuda:0
+train_device: cpu
+eval_device: cpu
+eval_total_size: 3000
+root: /home/server33/datasets
+block size: 1
+Dataset: cifar10
+Effective batch-size is 128 * 1 = 128.
+This is a dry run.
+Generated images (x64) will be saved to /home/server33/minyeong_workspace/FL-bench/src/utils/ddpm/images/train/pathmnist every 10 epoch(s)
+njm accum: 1
+cuDNN benchmark: ON
+Training starts...
+called vae
+==================== ALGORITHM: FedDiff ====================                                                                        
+Experiment Arguments:                                                                                                               
+{                                                                                                                                   
+    'model': 'custom',                                                                                                              
+    'dataset': 'cifar10',                                                                                                           
+    'seed': 42,                                                                                                                     
+    'join_ratio': 1.0,                                                                                                              
+    'global_epoch': 30000,                                                                                                          
+    'local_epoch': 1,                                                                                                               
+    'finetune_epoch': 0,                                                                                                            
+    'valid_gap': 10000,                                                                                                             
+    'test_gap': 10000,                                                                                                              
+    'eval_test': 1,                                                                                                                 
+    'eval_train': 0,                                                                                                                
+    'local_lr': 0.001,                                                                                                              
+    'momentum': 0.0,                                                                                                                
+    'weight_decay': 0.0,                                                                                                            
+    'verbose_gap': 1,                                                                                                               
+    'batch_size': 128,                                                                                                              
+    'visible': 0,                                                                                                                   
+    'global_testset': 0,                                                                                                            
+    'straggler_ratio': 0,                                                                                                           
+    'straggler_min_local_epoch': 1,                                                                                                 
+    'external_model_params_file': '',                                                                                               
+    'use_cuda': 1,                                                                                                                  
+    'save_log': 1,                                                                                                                  
+    'save_model': 0,                                                                                                                
+    'save_fig': 1,                                                                                                                  
+    'save_metrics': 1,                                                                                                              
+    'save_gap': 1,                                                                                                                  
+    'viz_win_name': None,                                                                                                           
+    'config_file': '',                                                                                                              
+    'check_convergence': 1,                                                                                                         
+    'personal_tag': 'private',                                                                                                      
+    'ckpt':                                                                                                                         
+'/home/server33/minyeong_workspace/FL-bench/out_cifar10_niid2_phoenix_trial1/FedDiff/checkpoints/cifar10_niid2_1_custom',           
+    'dataset_args': {                                                                                                               
+        'dataset': 'cifar10',                                                                                                       
+        'client_num': 20,                                                                                                           
+        'fraction': 0.5,                                                                                                            
+        'seed': 42,                                                                                                                 
+        'split': 'sample',                                                                                                          
+        'alpha': 1.0,                                                                                                               
+        'least_samples': 40                                                                                                         
+    }                                                                                                                               
+}                                                                                                                                   
+loaded from ckpt /home/server33/minyeong_workspace/FL-bench/out_cifar10_niid2_phoenix_trial1/FedDiff/checkpoints/cifar10_niid2_1_custom
+vae loss: tensor([0.], device='cuda:3')
+vae loss: tensor([0.], device='cuda:3')
+vae loss: tensor([0.], device='cuda:3')
+vae loss: tensor([0.], device='cuda:3')
+vae loss: tensor([0.], device='cuda:3')
+vae loss: tensor([0.], device='cuda:3')
+vae loss: tensor([0.], device='cuda:3')
+vae loss: tensor([0.], device='cuda:3')
+evaluating
+called sample_fn
+vae loss: tensor([0.], device='cuda:6')
+vae loss: tensor([0.], device='cuda:6')
+vae loss: tensor([0.], device='cuda:6')
+vae loss: tensor([0.], device='cuda:6')
+vae loss: tensor([0.], device='cuda:6')
+vae loss: tensor([0.], device='cuda:6')
+vae loss: tensor([0.], device='cuda:6')
+vae loss: tensor([0.], device='cuda:6')
+evaluating
+called sample_fn
+vae loss: tensor([0.], device='cuda:2')
+vae loss: tensor([0.], device='cuda:2')
+vae loss: tensor([0.], device='cuda:2')
+vae loss: tensor([0.], device='cuda:2')
+vae loss: tensor([0.], device='cuda:2')
+vae loss: tensor([0.], device='cuda:2')
+vae loss: tensor([0.], device='cuda:2')
+vae loss: tensor([0.], device='cuda:2')
+evaluating
+vae loss: tensor([0.], device='cuda:4')
+vae loss: tensor([0.], device='cuda:4')
+vae loss: tensor([0.], device='cuda:4')
+vae loss: tensor([0.], device='cuda:4')
+vae loss: tensor([0.], device='cuda:4')
+vae loss: tensor([0.], device='cuda:4')
+vae loss: tensor([0.], device='cuda:4')
+vae loss: tensor([0.], device='cuda:4')
+evaluating
+called sample_fn
+called sample_fn
+vae loss: tensor([0.], device='cuda:5')
+vae loss: tensor([0.], device='cuda:5')
+vae loss: tensor([0.], device='cuda:5')
+vae loss: tensor([0.], device='cuda:5')
+vae loss: tensor([0.], device='cuda:5')
+vae loss: tensor([0.], device='cuda:5')
+vae loss: tensor([0.], device='cuda:5')
+vae loss: tensor([0.], device='cuda:5')
+evaluating
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
+called sample_fn
