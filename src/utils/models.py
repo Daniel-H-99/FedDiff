@@ -84,7 +84,7 @@ INPUT_CHANNELS = {
 
 NUM_CLASSES = {
     "mnist": 10,
-    "mnist_niids": 10,
+    "mnist_niid2": 10,
     "pathmnist": 9,
     "pathmnist_class0": 9,
     "medmnistS": 11,

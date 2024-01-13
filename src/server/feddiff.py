@@ -171,6 +171,7 @@ def get_feddiff_argparser() -> ArgumentParser:
         type=str,
         choices=[
             "mnist",
+            "mnist_niid2",
             "pathmnist",
             "pathmnist_class0",
             "cifar10",
@@ -223,7 +224,7 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("-cfg", "--config_file", type=str, default="")
     parser.add_argument("--check_convergence", type=int, default=1)
     parser.add_argument("--personal_tag", type=str, default=None)
-    parser.add_argument("--ckpt", type=str, default='/home/server33/minyeong_workspace/FL-bench/out_cifar10_niid2_phoenix_trial1/FedDiff/checkpoints/cifar10_niid2_13_custom')
+    parser.add_argument("--ckpt", type=str, default=None)
     return parser
 
 
@@ -253,11 +254,11 @@ class FedDiffServer:
                 partition = pickle.load(f)
         except:
             raise FileNotFoundError(f"Please partition {args.dataset} first.")
-        self.train_clients: List[int] = partition["separation"]["train"][:10]
-        self.test_clients: List[int] = partition["separation"]["test"][:10]
+        self.train_clients: List[int] = partition["separation"]["train"][:5]
+        self.test_clients: List[int] = partition["separation"]["test"][:5]
 
         # self.client_num: int = partition["separation"]["total"]
-        self.client_num: int = 10
+        self.client_num: int = 5
 
         # init model(s) parameters
         self.device = get_best_device(self.args.use_cuda)
@@ -436,9 +437,25 @@ class FedDiffServer:
         del self.model
         torch.cuda.empty_cache()
 
+    def get_epoch(self, f):
+        return int(f.split('_')[2])
+    
+    def update_last_optimizer_checkpoint(self, save_dir):
+        opt_checkpoints = [f for f in os.listdir(save_dir) if 'opt' in f]
+        epoch_opt_dict = {}
+        for f in opt_checkpoints:
+            epoch_opt_dict[self.get_epoch(f)] = epoch_opt_dict.get(self.get_epoch(f), []) + [f]
+        assert len(epoch_opt_dict) <= 2, f'{len(epoch_opt_dict)}'
+        if len(epoch_opt_dict) == 2:
+            assert len(epoch_opt_dict.values()[0]) == len(epoch_opt_dict.values()[1]), f'{len(epoch_opt_dict.values()[0])} vs {len(epoch_opt_dict.values()[1])}'
+        keys = sorted(list(epoch_opt_dict.keys()))
+        for f in epoch_opt_dict[keys[0]]:
+            os.remove(os.path.join(save_dir, f))
+    
     def save_trainers(self, e, save_dir, before=False):
         for trainer in self.trainers:
             trainer.save_trainer(e, save_dir, before=False)
+        self.update_last_optimizer_checkpoint(save_dir)
         
     def train(self):
         """The Generic FL training process"""

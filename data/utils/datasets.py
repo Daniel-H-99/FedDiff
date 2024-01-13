@@ -384,6 +384,32 @@ class SVHN(BaseDataset):
         self.train_target_transform = train_target_transform
 
 
+# class MNIST(BaseDataset):
+#     def __init__(
+#         self,
+#         root,
+#         args=None,
+#         general_data_transform=None,
+#         general_target_transform=None,
+#         train_data_transform=None,
+#         train_target_transform=None,
+#     ):
+#         super().__init__()
+#         train_part = torchvision.datasets.MNIST(root, True, download=True)
+#         test_part = torchvision.datasets.MNIST(root, False)
+#         train_data = torch.Tensor(train_part.data).float().unsqueeze(1)
+#         test_data = torch.Tensor(test_part.data).float().unsqueeze(1)
+#         train_targets = torch.Tensor(train_part.targets).long().squeeze()
+#         test_targets = torch.Tensor(test_part.targets).long().squeeze()
+#         self.data = torch.cat([train_data, test_data])
+#         self.targets = torch.cat([train_targets, test_targets])
+#         self.classes = train_part.classes
+#         self.general_data_transform = general_data_transform
+#         self.general_target_transform = general_target_transform
+#         self.train_data_transform = train_data_transform
+#         self.train_target_transform = train_target_transform
+
+
 class MNIST(BaseDataset):
     def __init__(
         self,
@@ -395,19 +421,17 @@ class MNIST(BaseDataset):
         train_target_transform=None,
     ):
         super().__init__()
-        train_part = torchvision.datasets.MNIST(root, True, download=True)
-        test_part = torchvision.datasets.MNIST(root, False)
-        train_data = torch.Tensor(train_part.data).float().unsqueeze(1)
-        test_data = torch.Tensor(test_part.data).float().unsqueeze(1)
-        train_targets = torch.Tensor(train_part.targets).long().squeeze()
-        test_targets = torch.Tensor(test_part.targets).long().squeeze()
-        self.data = torch.cat([train_data, test_data])
-        self.targets = torch.cat([train_targets, test_targets])
-        self.classes = train_part.classes
+        if not isinstance(root, Path):
+            root = Path(root)
+        self.data = torch.Tensor(np.load(root / "raw" / "xdata.npy")).float().permute(0, 3, 1, 2)
+        # self.targets = torch.Tensor(np.load(root / "raw" / "ydata.npy")).long().squeeze()
+        self.targets = torch.zeros_like(torch.Tensor(np.load(root / "raw" / "ydata.npy"))).long().squeeze()
+        self.classes = list(range(10))
         self.general_data_transform = general_data_transform
         self.general_target_transform = general_target_transform
         self.train_data_transform = train_data_transform
         self.train_target_transform = train_target_transform
+
 
 
 class FashionMNIST(BaseDataset):
