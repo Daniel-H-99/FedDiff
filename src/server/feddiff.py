@@ -340,7 +340,7 @@ class FedDiffServer:
             for _ in range(self.args.global_epoch)
         ]
         self.selected_clients: List[int] = []
-        self.current_epoch = 13
+        self.current_epoch = 0
         # For controlling behaviors of some specific methods while testing (not used by all methods)
         self.test_flag = False
 
@@ -448,9 +448,9 @@ class FedDiffServer:
         assert len(epoch_opt_dict) <= 2, f'{len(epoch_opt_dict)}'
         if len(epoch_opt_dict) == 2:
             assert len(epoch_opt_dict.values()[0]) == len(epoch_opt_dict.values()[1]), f'{len(epoch_opt_dict.values()[0])} vs {len(epoch_opt_dict.values()[1])}'
-        keys = sorted(list(epoch_opt_dict.keys()))
-        for f in epoch_opt_dict[keys[0]]:
-            os.remove(os.path.join(save_dir, f))
+            keys = sorted(list(epoch_opt_dict.keys()))
+            for f in epoch_opt_dict[keys[0]]:
+                os.remove(os.path.join(save_dir, f))
     
     def save_trainers(self, e, save_dir, before=False):
         for trainer in self.trainers:
