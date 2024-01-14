@@ -13,8 +13,8 @@ from scripts.gather_gen_images import todo
 import argparse
 sys.path.append(Path(__file__).parent.joinpath("src/server").absolute().as_posix())
 
-# image_fid_dir = '/home/server33/minyeong_workspace/FL-bench/images_fid'
-true_image_dir = '/home/server33/minyeong_workspace/FL-bench/data/cifar10_niid2/raw'
+# image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/images_fid'
+true_image_dir = '/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid2/raw'
 
 CID=0
 def init_wandb(pj, name=None, id=None):
@@ -170,7 +170,7 @@ def main():
     
     # print(f'loaded server')
     
-    # ckpt_dir = f'/home/server33/minyeong_workspace/FL-bench/out_cifar10_niid2_phoenix_trial1/FedDiff/checkpoints'
+    # ckpt_dir = f'/home/server36/minyeong_workspace/FL-bench/out_cifar10_niid2_phoenix_trial1/FedDiff/checkpoints'
     # files = sorted(list(set([int(f.split('_')[2]) for f in os.listdir(ckpt_dir) ])))
     # ckpt_name_list = [os.path.join(ckpt_dir, f"cifar10_niid2_{f}_custom") for f in files if f < 13]
     
@@ -186,10 +186,10 @@ def main():
         # print(f'{log}')
     
     
-    # cifar_src_path = '/home/server33/minyeong_workspace/ddpm-torch/images/eval/cifar10/cifar10_2040_ddim'
-    # # cifar_src_path = '/home/server33/minyeong_workspace/ddpm-torch/tmp'
-    # # cifar_tgt_path = '/home/server33/minyeong_workspace/FL-bench/data/cifar10/raw/all/train'
-    # cifar_tgt_path = '/home/server33/minyeong_workspace/FL-bench/data/cifar10/raw/_all/train'
+    # cifar_src_path = '/home/server36/minyeong_workspace/ddpm-torch/images/eval/cifar10/cifar10_2040_ddim'
+    # # cifar_src_path = '/home/server36/minyeong_workspace/ddpm-torch/tmp'
+    # # cifar_tgt_path = '/home/server36/minyeong_workspace/FL-bench/data/cifar10/raw/all/train'
+    # cifar_tgt_path = '/home/server36/minyeong_workspace/FL-bench/data/cifar10/raw/_all/train'
     # fid_dict = calc_fid_dict_external(cifar_src_path, cifar_tgt_path)
 
     # with open(f'tested_fid_fed_cifar10_client.pkl', 'wb') as f:
@@ -198,7 +198,7 @@ def main():
 
     
     fid_dict = calc_fid_dict(ckpt_name_list, pj, id, image_fid_dir)
-    with open(f'tested_fid_condfed_cifar10_niid2_client_{CID}.pkl', 'wb') as f:
+    with open(f'tested_fid_condphoenix_cifar10_niid2_client_{CID}.pkl', 'wb') as f:
         pkl.dump(fid_dict, f)
 
         

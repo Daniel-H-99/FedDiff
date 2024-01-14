@@ -4,4 +4,4 @@
 # run FedAvg on CIFAR-10 with default settings.
 # Use main.py like python main.py <method> [args ...]
 # ❗ Method name should be identical to the `.py` file name in `src/server`.
-python test_fid.py feddiff -d cifar_niid2 --join_ratio 1.0 --personal_tag 'private'
+python test_fid.py feddiff -d cifar10_niid2 --join_ratio 1.0 --personal_tag 'private'

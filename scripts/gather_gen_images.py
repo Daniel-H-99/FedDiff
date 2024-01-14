@@ -4,7 +4,7 @@ import numpy as np
 from tqdm import tqdm
 
 
-def todo(root=f'/home/server33/minyeong_workspace/FL-bench/images_fid/10'):
+def todo(root=f'/home/server36/minyeong_workspace/FL-bench/images_fid/10'):
     # save_dir = '/home/server36/minyeong_workspace/FL-bench/images_fid/10'
     local_save_dir = os.path.join(root, 'local', 'all')
     if os.path.exists(local_save_dir):

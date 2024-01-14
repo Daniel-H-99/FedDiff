@@ -5,12 +5,12 @@ from tqdm import tqdm
 from imageio import imwrite
 
 def main():
-    root = '/home/server33/minyeong_workspace/FL-bench/data/cifar10_niid2/raw'
+    root = '/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid2/raw'
     cid_list = list(range(5))
     try:
-        indices = pkl.load(open('/home/server33/minyeong_workspace/FL-bench/data/cifar10_niid2/indices.pkl', 'rb'))
+        indices = pkl.load(open('/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid2/indices.pkl', 'rb'))
     except:
-        partition = pkl.load(open('/home/server33/minyeong_workspace/FL-bench/data/cifar10_niid2/partition.pkl', 'rb'))
+        partition = pkl.load(open('/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid2/partition.pkl', 'rb'))
         indices = {int(k) : np.concatenate([partition['data_indices'][int(k)]['train'], partition['data_indices'][int(k)]['test']]) for k in range(len(partition['data_indices']))}
     all_train_idx = []
     all_test_idx = []

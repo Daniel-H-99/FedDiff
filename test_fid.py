@@ -13,13 +13,13 @@ from scripts.gather_gen_images import todo
 import argparse
 sys.path.append(Path(__file__).parent.joinpath("src/server").absolute().as_posix())
 
-# image_fid_dir = '/home/server33/minyeong_workspace/FL-bench/images_fid'
-image_fid_dir = '/home/server33/minyeong_workspace/FL-bench/out_mnist_niid2_label_trial1/FedDiff/images_fid'
-true_image_dir = '/home/server33/minyeong_workspace/FL-bench/data/mnist_niid2/raw'
+# image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/images_fid'
+image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/out_cifar10_niid2_condphoenix_trial1/FedDiff/images_fid'
+true_image_dir = '/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid2/raw'
 
 CID=0
 def init_wandb():
-    wandb.init(project='fids', name=f'label_mnist_niid2_niid2_client{CID}')
+    wandb.init(project='fids', name=f'condphoenix_cifar10_niid2_client{CID}')
     
 def load_models(cls, args, ckpt_name):
     args.ckpt = ckpt_name
@@ -162,25 +162,25 @@ def main():
     
     # print(f'loaded server')
     
-    ckpt_dir = f'/home/server33/minyeong_workspace/FL-bench/out_mnist_niid2_label_trial1/FedDiff/checkpoints'
+    ckpt_dir = f'/home/server36/minyeong_workspace/FL-bench/out_cifar10_niid2_condphoenix_trial1/FedDiff/checkpoints'
     files = sorted(list(set([int(f.split('_')[2]) for f in os.listdir(ckpt_dir) ])))
-    ckpt_name_list = [os.path.join(ckpt_dir, f"mnist_niid2_{f}_custom") for f in files if f <= 20]
+    ckpt_name_list = [os.path.join(ckpt_dir, f"cifar10_niid2_{f}_custom") for f in files if f <= 40]
     
     # print(f'ckpt_name_list: {ckpt_name_list}')
     # while True:
     #     continue
     
-    for ckpt_name in ckpt_name_list:
-        server = load_models(server_class, args, ckpt_name)
-        log = server.calc_fid(int(os.path.basename(ckpt_name).split('_')[2]))
-        todo(os.path.join(image_fid_dir, f'{int(os.path.basename(ckpt_name).split("_")[2])}'))
-        print(f'{log}')
+    # for ckpt_name in ckpt_name_list:
+    #     server = load_models(server_class, args, ckpt_name)
+    #     log = server.calc_fid(int(os.path.basename(ckpt_name).split('_')[2]))
+    #     todo(os.path.join(image_fid_dir, f'{int(os.path.basename(ckpt_name).split("_")[2])}'))
+    #     print(f'{log}')
     
     
-    # cifar_src_path = '/home/server33/minyeong_workspace/ddpm-torch/images/eval/cifar10/cifar10_2040_ddim'
-    # # cifar_src_path = '/home/server33/minyeong_workspace/ddpm-torch/tmp'
-    # # cifar_tgt_path = '/home/server33/minyeong_workspace/FL-bench/data/cifar10/raw/all/train'
-    # cifar_tgt_path = '/home/server33/minyeong_workspace/FL-bench/data/cifar10/raw/_all/train'
+    # cifar_src_path = '/home/server36/minyeong_workspace/ddpm-torch/images/eval/cifar10/cifar10_2040_ddim'
+    # # cifar_src_path = '/home/server36/minyeong_workspace/ddpm-torch/tmp'
+    # # cifar_tgt_path = '/home/server36/minyeong_workspace/FL-bench/data/cifar10/raw/all/train'
+    # cifar_tgt_path = '/home/server36/minyeong_workspace/FL-bench/data/cifar10/raw/_all/train'
     # fid_dict = calc_fid_dict_external(cifar_src_path, cifar_tgt_path)
 
     # with open(f'tested_fid_fed_cifar10_client.pkl', 'wb') as f:
@@ -189,7 +189,7 @@ def main():
 
     
     fid_dict = calc_fid_dict(ckpt_name_list)
-    with open(f'tested_fid_label_mnist_niid2_client_{CID}.pkl', 'wb') as f:
+    with open(f'tested_fid_condphoenix_cifar10_niid2_client_{CID}.pkl', 'wb') as f:
         pkl.dump(fid_dict, f)
 
         
