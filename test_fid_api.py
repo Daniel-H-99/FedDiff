@@ -14,7 +14,7 @@ import argparse
 sys.path.append(Path(__file__).parent.joinpath("src/server").absolute().as_posix())
 
 # image_fid_dir = '/home/server33/minyeong_workspace/FL-bench/images_fid'
-true_image_dir = '/home/server33/minyeong_workspace/FL-bench/data/mnist_niid2/raw'
+true_image_dir = '/home/server33/minyeong_workspace/FL-bench/data/cifar10_niid2/raw'
 
 CID=0
 def init_wandb(pj, name=None, id=None):
@@ -88,6 +88,7 @@ def calc_fid_dict(checkpoints, pj, id,  image_fid_dir):
             # res[f'global_global_client_{client_id}'] = calc_fid(syn_global_path, true_global_path)
         wandb.log(res, step=epoch)
         output[epoch] = res
+    wandb.finish()
     return output
 
 def calc_privacy_dict(checkpoints):
@@ -196,8 +197,8 @@ def main():
 
 
     
-    fid_dict = calc_fid_dict(ckpt_name_list, pj, id, img_fid_dir)
-    with open(f'tested_fid_phoenix_cifar10_niid2_client_{CID}.pkl', 'wb') as f:
+    fid_dict = calc_fid_dict(ckpt_name_list, pj, id, image_fid_dir)
+    with open(f'tested_fid_condfed_cifar10_niid2_client_{CID}.pkl', 'wb') as f:
         pkl.dump(fid_dict, f)
 
         

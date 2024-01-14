@@ -259,11 +259,11 @@ class FedDiffServer:
                 partition = pickle.load(f)
         except:
             raise FileNotFoundError(f"Please partition {args.dataset} first.")
-        self.train_clients: List[int] = partition["separation"]["train"][:5]
-        self.test_clients: List[int] = partition["separation"]["test"][:5]
+        self.train_clients: List[int] = partition["separation"]["train"][:10]
+        self.test_clients: List[int] = partition["separation"]["test"][:10]
 
         # self.client_num: int = partition["separation"]["total"]
-        self.client_num: int = 5
+        self.client_num: int = 10
 
         # init model(s) parameters
         self.device = get_best_device(self.args.use_cuda)
@@ -525,7 +525,7 @@ class FedDiffServer:
                 ckpt = save_dir / f"{self.args.dataset}_{E + 1}_{self.args.model}"
                 save_img_dir = OUT_DIR / self.algo / 'images_fid' 
                 self.test(ckpt, save_img_dir)
-                
+
         self.logger.log(
             f"{self.algo}'s average time taken by each global epoch: {int(avg_round_time // 60)} m {(avg_round_time % 60):.2f} s."
         )
@@ -681,6 +681,9 @@ class FedDiffServer:
         save_dir = OUT_DIR / self.algo / 'images_fid'
         os.makedirs(save_dir, exist_ok=True)
         tasks = self.generate_fid_task(self.test_clients, epoch, save_dir)
+        # print(f'tasks: {[len(v[1]) for v in tasks]}')
+        # while True:
+        #     continue
         # print(f'tasks: {tasks}')
         # while True:
         #     continue
@@ -761,7 +764,7 @@ class FedDiffServer:
         id = self.wandb_pj.id
         # while True:
         #     print(f'checkpoint: {checkpoint}')
-        test_cmd = ['python', 'test_fid_api.py', 'feddiff', f'{checkpoint}', f'{save_dir}', f'{pj}', f'{id}', '-d', 'mnist_niid2', '--join_ratio', '1.0']
+        test_cmd = ['python', 'test_fid_api.py', 'feddiff', f'{checkpoint}', f'{save_dir}', f'{pj}', f'{id}', '-d', 'cifar10_niid2', '--join_ratio', '1.0']
         self.proc = subprocess.Popen(args=test_cmd, stdout=self.stdout, stderr=self.stderr)
         # print(f'waiting')
         # self.proc.wait()

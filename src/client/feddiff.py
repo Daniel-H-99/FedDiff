@@ -118,17 +118,15 @@ class FedDiffClient:
         os.makedirs(self.image_dir, exist_ok=True)
 
         label_dist = {}
-        with open('/home/server33/minyeong_workspace/FL-bench/data/pathmnist/all_stats.json', 'r') as f:
-            d = json.load(f)
-            for k, v in d.items():
-                if k == 'sample per client':
-                    continue
-                dist = np.zeros(9)
-                # for _k, _v in v['y'].items():
-                #     dist[int(_k)] = _v
-                # dist = dist / dist.sum()
-                dist[0] = 1
-                label_dist[int(k)] = dist
+
+        for k in range(10):
+            dist = np.zeros(10)
+            # for _k, _v in v['y'].items():
+            #     dist[int(_k)] = _v
+            # dist = dist / dist.sum()
+            dist[k - 1] = 0.5
+            dist[k] = 0.5
+            label_dist[k] = dist
         # print(f'dist 0: {label_dist[0]}')
         self.label_dist = label_dist
         # while True:
@@ -201,7 +199,7 @@ class FedDiffClient:
         self.trainset.indices = all_indices[:-1000]
         self.testset.indices = all_indices[-1000:]
           
-        L = 128 * 1
+        L = 128 * 2000
         st = (L * e) % len(self.trainset.indices)
         self.trainset.indices = np.concatenate([self.trainset.indices] * 52)[st: st + L]
     
@@ -482,6 +480,10 @@ class FedDiffClient:
             loss = 0
             print(f'len trainloadr: {len(self.trainloader)}')
             for j, (x, y) in tqdm(enumerate(self.trainloader)):
+                # y.fill_(self.client_id)
+                # print(f'y: {y}')
+                # while True:
+                #     continue
                 loss = self.model.step(x, y)
                 loss_log += loss * len(y)
                 cnt += len(y)
@@ -635,7 +637,7 @@ class FedDiffClient:
         os.makedirs(global_save_path, exist_ok=True)
         os.makedirs(adv_save_path, exist_ok=True)
         # fid_adv = self.model.evaluator.sample(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/ref_fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, adv=True, save_path=adv_save_path)['fid'][0]
-        fid_local = self.model.evaluator.sample(self.model.base.sample_fn, self.label_dist[0], [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/ref_fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, save_path=local_save_path)['fid'][0]
+        fid_local = self.model.evaluator.sample(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/ref_fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, save_path=local_save_path)['fid'][0]
         # fid_global = self.model.evaluator.sample(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/ref_fid_stats_pathmnist.npz'], is_leader=True, save_path=global_save_path)['fid'][0]
         fid_adv = fid_local
         fid_global = fid_local

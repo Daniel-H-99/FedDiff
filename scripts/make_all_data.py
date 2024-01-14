@@ -5,12 +5,12 @@ from tqdm import tqdm
 from imageio import imwrite
 
 def main():
-    root = '/home/server33/minyeong_workspace/FL-bench/data/mnist_niid2/raw'
+    root = '/home/server33/minyeong_workspace/FL-bench/data/cifar10_niid2/raw'
     cid_list = list(range(5))
     try:
-        indices = pkl.load(open('/home/server33/minyeong_workspace/FL-bench/data/mnist_niid2/indices.pkl', 'rb'))
+        indices = pkl.load(open('/home/server33/minyeong_workspace/FL-bench/data/cifar10_niid2/indices.pkl', 'rb'))
     except:
-        partition = pkl.load(open('/home/server33/minyeong_workspace/FL-bench/data/mnist_niid2/partition.pkl', 'rb'))
+        partition = pkl.load(open('/home/server33/minyeong_workspace/FL-bench/data/cifar10_niid2/partition.pkl', 'rb'))
         indices = {int(k) : np.concatenate([partition['data_indices'][int(k)]['train'], partition['data_indices'][int(k)]['test']]) for k in range(len(partition['data_indices']))}
     all_train_idx = []
     all_test_idx = []
@@ -24,8 +24,8 @@ def main():
         idx_list = indices[cid]
         # train_idx_list = idx_list[:int(0.9 * len(idx_list))]
         # test_idx_list = idx_list[int(0.9 * len(idx_list)):]
-        train_idx_list = idx_list[:-2000]
-        test_idx_list = idx_list[-2000:]
+        train_idx_list = idx_list[:-1000]
+        test_idx_list = idx_list[-1000:]
         print(f'train_idx_list: {len(train_idx_list)}')
         print(f'test_idx_list: {len(test_idx_list)}')
         # while True:
@@ -36,11 +36,11 @@ def main():
         # for idx in tqdm(test_idx_list):
         #     save_path = os.path.join(test_dir, '{:05d}.png'.format(idx))
         #     imwrite(save_path, data[idx])
-        all_train_idx.append(np.random.permutation(train_idx_list)[:10000])
-        all_test_idx.append(np.random.permutation(test_idx_list)[:10000])
+        all_train_idx.append(np.random.permutation(train_idx_list)[:1000])
+        all_test_idx.append(np.random.permutation(test_idx_list)[:1000])
     
-    all_train_dir = os.path.join(root, 'all', 'train')
-    all_test_dir = os.path.join(root, 'all', 'test')
+    all_train_dir = os.path.join(root, 'all_10000', 'train')
+    all_test_dir = os.path.join(root, 'all_10000', 'test')
     os.makedirs(all_train_dir, exist_ok=True)
     os.makedirs(all_test_dir, exist_ok=True)
     all_train_idx = np.concatenate(all_train_idx)
