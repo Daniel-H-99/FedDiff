@@ -577,7 +577,7 @@ class CustomModel(DecoupledGenModel):
         # The default forwarding process is: out = self.classifier(self.base(input))
         self.classes = NUM_CLASSES[dataset]
         # self.private = s
-        self.base, self.evaluator, self.image_dir = export_trainer(train_device=device, eval_device=device, eval_total_size=3000)
+        self.base, self.evaluator, self.image_dir = export_trainer(train_device=device, eval_device=device, eval_total_size=2000)
         # print(f'image dir: {self.image_dir}')
         # while True:
         #     continue
@@ -608,8 +608,8 @@ class CustomModel(DecoupledGenModel):
         #     continue
         assert False
         
-    def step(self, x, y):
-        loss = self.base.step(x, y)
+    def step(self, x, y, **kwargs):
+        loss = self.base.step(x, y, **kwargs)
         return loss.cpu().item()
 
     def valid_step(self, x, y):

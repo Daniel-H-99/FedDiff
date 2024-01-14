@@ -16,7 +16,7 @@ from rich.console import Console
 from data.utils.datasets import BaseDataset
 
 PROJECT_DIR = Path(__file__).parent.parent.parent.absolute()
-OUT_DIR = PROJECT_DIR / "out_mnist_niid2_phoenix_trial1"
+OUT_DIR = PROJECT_DIR / "out_mnist_niid2_twophase_trial1"
 TEMP_DIR = PROJECT_DIR / "temp"
 
 
@@ -24,7 +24,7 @@ def fix_random_seed(seed: int) -> None:
     """Fix the random seed of FL training.
 
     Args:
-        seed (int): Any number you like as the random seed.
+        seed (int): Any number you like as the random seed.c
     """
     os.environ["PYTHONHASHSEED"] = str(seed)
     random.seed(seed)

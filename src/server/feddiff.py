@@ -340,7 +340,7 @@ class FedDiffServer:
             for _ in range(self.args.global_epoch)
         ]
         self.selected_clients: List[int] = []
-        self.current_epoch = 13
+        self.current_epoch = 0
         # For controlling behaviors of some specific methods while testing (not used by all methods)
         self.test_flag = False
 
@@ -408,7 +408,7 @@ class FedDiffServer:
 
         if default_trainer:
             self.trainers = [FedDiffClient(
-                # deepcopy(self.model), self.args, OUT_DIR / self.algo / f"{self.args.dataset}_trainderid{i}_log.html", f'cuda:{i % 2}', i
+                # deepcopy(self.model), self.args, OUT_DIR / self.algo / f"{self.args.dataset}_trainderid{i}_log.html", f'cuda:{i % 3}', i
                 deepcopy(self.model), self.args, OUT_DIR / self.algo / f"{self.args.dataset}_trainderid{i}_log.html", f'cuda:{self.NUM_GPU - self.NUM_TRAINER + i}', i
             ) for i in range(self.NUM_TRAINER)]
             # print(f'type: {type(self.trainers[0].state_dict)}')

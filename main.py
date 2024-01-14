@@ -7,7 +7,7 @@ sys.path.append(Path(__file__).parent.joinpath("src/server").absolute().as_posix
 
 
 def wandb_init():
-    wandb.init(project="mnist", name="mnist_niid2_phoenix_trial1")
+    wandb.init(project="mnist", name="mnist_niid2_twophase_trial1")
     
 if __name__ == "__main__":
     if len(sys.argv) < 2:
