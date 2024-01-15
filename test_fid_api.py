@@ -197,9 +197,9 @@ def main():
 
 
     
-    fid_dict = calc_fid_dict(ckpt_name_list, pj, id, image_fid_dir)
-    with open(f'tested_fid_condphoenix_cifar10_niid2_client_{CID}.pkl', 'wb') as f:
-        pkl.dump(fid_dict, f)
+    # fid_dict = calc_fid_dict(ckpt_name_list, pj, id, image_fid_dir)
+    # with open(f'tested_fid_condphoenix_cifar10_niid2_client_{CID}.pkl', 'wb') as f:
+    #     pkl.dump(fid_dict, f)
 
         
     # privacy_dict = calc_privacy_dict(ckpt_name_list)
