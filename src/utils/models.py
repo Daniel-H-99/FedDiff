@@ -97,6 +97,7 @@ NUM_CLASSES = {
     "cifar10": 10,
     "cifar10_class0": 10,
     "cifar10_niid2": 10,
+    "cifar10_niid3": 10,
     "cinic10": 10,
     "cifar100": 100,
     "covid19": 4,
@@ -577,7 +578,7 @@ class CustomModel(DecoupledGenModel):
         # The default forwarding process is: out = self.classifier(self.base(input))
         self.classes = NUM_CLASSES[dataset]
         # self.private = s
-        self.base, self.evaluator, self.image_dir = export_vq_trainer(train_device=device, eval_device=device, eval_total_size=1000)
+        self.base, self.evaluator, self.image_dir = export_vq_trainer(train_device=device, eval_device=device, eval_total_size=10000)
         # print(f'image dir: {self.image_dir}')
         # while True:
         #     continue

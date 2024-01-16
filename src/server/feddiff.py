@@ -178,6 +178,7 @@ def get_feddiff_argparser() -> ArgumentParser:
             "cifar10",
             "cifar10_class0",
             "cifar10_niid2",
+            "cifar10_niid3",
             "cifar100",
             "synthetic",
             "femnist",
@@ -259,11 +260,11 @@ class FedDiffServer:
                 partition = pickle.load(f)
         except:
             raise FileNotFoundError(f"Please partition {args.dataset} first.")
-        self.train_clients: List[int] = partition["separation"]["train"][:10]
-        self.test_clients: List[int] = partition["separation"]["test"][:10]
+        self.train_clients: List[int] = partition["separation"]["train"][:5]
+        self.test_clients: List[int] = partition["separation"]["test"][:5]
 
         # self.client_num: int = partition["separation"]["total"]
-        self.client_num: int = 10
+        self.client_num: int = 5
 
         # init model(s) parameters
         self.device = get_best_device(self.args.use_cuda)
@@ -333,7 +334,7 @@ class FedDiffServer:
 
 
         self.NUM_TRAINER = 5
-        self.NUM_GPU = 7
+        self.NUM_GPU = 8
         
         # To make sure all algorithms run through the same client sampling stream.
         # Some algorithms' implicit operations at client side may disturb the stream if sampling happens at each FL round's beginning.
@@ -764,7 +765,7 @@ class FedDiffServer:
         id = self.wandb_pj.id
         # while True:
         #     print(f'checkpoint: {checkpoint}')
-        test_cmd = ['python', 'test_fid_api.py', 'feddiff', f'{checkpoint}', f'{save_dir}', f'{pj}', f'{id}', '-d', 'cifar10_niid2', '--join_ratio', '1.0']
+        test_cmd = ['python', 'test_fid_api.py', 'feddiff', f'{checkpoint}', f'{save_dir}', f'{pj}', f'{id}', '-d', 'cifar10_niid3', '--join_ratio', '1.0']
         self.proc = subprocess.Popen(args=test_cmd, stdout=self.stdout, stderr=self.stderr)
         # print(f'waiting')
         # self.proc.wait()

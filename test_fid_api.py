@@ -14,7 +14,7 @@ import argparse
 sys.path.append(Path(__file__).parent.joinpath("src/server").absolute().as_posix())
 
 # image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/images_fid'
-true_image_dir = '/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid2/raw'
+true_image_dir = '/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid3/raw'
 
 CID=0
 def init_wandb(pj, name=None, id=None):

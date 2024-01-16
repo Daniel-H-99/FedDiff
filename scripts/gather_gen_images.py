@@ -4,7 +4,7 @@ import numpy as np
 from tqdm import tqdm
 
 
-def todo(root=f'/home/server36/minyeong_workspace/FL-bench/images_fid/10'):
+def todo(root=f'/home/server36/minyeong_workspace/FL-bench/images_fid/10', N=5000, N_client=5):
     # save_dir = '/home/server36/minyeong_workspace/FL-bench/images_fid/10'
     local_save_dir = os.path.join(root, 'local', 'all')
     if os.path.exists(local_save_dir):
@@ -12,8 +12,7 @@ def todo(root=f'/home/server36/minyeong_workspace/FL-bench/images_fid/10'):
     os.makedirs(local_save_dir)
 
     all_local_files = []
-    N = 10000
-    N_client = 10
+
     N_per_client = [N // N_client] * N_client
     N_per_client.append(N - sum(N_per_client))
     for cid in range(N_client):

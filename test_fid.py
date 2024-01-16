@@ -14,12 +14,12 @@ import argparse
 sys.path.append(Path(__file__).parent.joinpath("src/server").absolute().as_posix())
 
 # image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/images_fid'
-image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/out_cifar10_niid2_vqphoenix_trial1/FedDiff/images_fid'
-true_image_dir = '/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid2/raw'
+image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/out_cifar10_niid3_vqfed_trial1/FedDiff/images_fid'
+true_image_dir = '/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid3/raw'
 
 CID=0
 def init_wandb():
-    wandb.init(project='fids', name=f'condphoenix_cifar10_niid2_client{CID}')
+    wandb.init(project='fids', name=f'condphoenix_cifar10_niid3_client{CID}')
     
 def load_models(cls, args, ckpt_name):
     args.ckpt = ckpt_name
@@ -78,7 +78,7 @@ def calc_fid_dict(checkpoints):
             syn_all_path = os.path.join(image_fid_dir, f'{epoch}', 'local', 'all')
             true_local_path = os.path.join(true_image_dir, f'{client_id}', 'train')
             syn_global_path = os.path.join(image_fid_dir, f'{epoch}', 'global', f'{client_id}')
-            true_global_path = os.path.join(true_image_dir, 'all_10000', 'train')
+            true_global_path = os.path.join(true_image_dir, 'all_50000', 'train')
             # res[f'local_local_client_{client_id}'] = calc_fid(syn_local_path, true_local_path)
             # res[f'local_global_client_{client_id}'] = calc_fid(syn_local_path, true_global_path)
             res[f'global_global_client_{client_id}'] = calc_fid(syn_all_path, true_global_path)
@@ -162,9 +162,9 @@ def main():
     
     # print(f'loaded server')
     
-    ckpt_dir = f'/home/server36/minyeong_workspace/FL-bench/out_cifar10_niid2_vqphoenix_trial1/FedDiff/checkpoints'
+    ckpt_dir = f'/home/server36/minyeong_workspace/FL-bench/out_cifar10_niid3_vqfed_trial1/FedDiff/checkpoints'
     files = sorted(list(set([int(f.split('_')[2]) for f in os.listdir(ckpt_dir) ])))
-    ckpt_name_list = [os.path.join(ckpt_dir, f"cifar10_niid2_{f}_custom") for f in files if f <= 22]
+    ckpt_name_list = [os.path.join(ckpt_dir, f"cifar10_niid3_{f}_custom") for f in files if (85 < f) and (f <= 100)]
     
     # print(f'ckpt_name_list: {ckpt_name_list}')
     # while True:
@@ -173,7 +173,7 @@ def main():
     for ckpt_name in ckpt_name_list:
         server = load_models(server_class, args, ckpt_name)
         log = server.calc_fid(int(os.path.basename(ckpt_name).split('_')[2]))
-        todo(os.path.join(image_fid_dir, f'{int(os.path.basename(ckpt_name).split("_")[2])}'))
+        todo(os.path.join(image_fid_dir, f'{int(os.path.basename(ckpt_name).split("_")[2])}'), N=50000)
         print(f'{log}')
     
     
@@ -189,7 +189,7 @@ def main():
 
     
     fid_dict = calc_fid_dict(ckpt_name_list)
-    with open(f'tested_fid_vqphoenix_cifar10_niid2_client_{CID}.pkl', 'wb') as f:
+    with open(f'tested_fid_vqfed_cifar10_niid3_client_{CID}.pkl', 'wb') as f:
         pkl.dump(fid_dict, f)
 
         

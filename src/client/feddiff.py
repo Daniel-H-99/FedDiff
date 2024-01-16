@@ -197,12 +197,12 @@ class FedDiffClient:
         all_indices = np.concatenate([self.data_indices[self.client_id]["train"], self.data_indices[self.client_id]["test"]])
         # self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
         # self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
-        self.trainset.indices = all_indices[:-1000]
-        self.testset.indices = all_indices[-1000:]
+        self.trainset.indices = all_indices[:-2000]
+        self.testset.indices = all_indices[-2000:]
           
-        L = 128 * 2000
+        L = 128 * 400
         st = (L * e) % len(self.trainset.indices)
-        self.trainset.indices = np.concatenate([self.trainset.indices] * 52)[st: st + L]
+        self.trainset.indices = np.concatenate([self.trainset.indices] * 12)[st: st + L]
     
         # self.trainset.indices = self.train_idc[self.client_id]
         # self.testset.indices = self.test_idc[self.client_id]
@@ -324,6 +324,14 @@ class FedDiffClient:
         # personal params would overlap the dummy params from new_parameters from the same layerss
         self.model.load_state_dict(personal_parameters, strict=False)
 
+        w = self.model.base.model.private_context_generator.codebook.weight
+        w0 = torch.tensor(np.load(f'/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid3/raw/vq_centroid_client{self.client_id}.npy'))
+        with torch.no_grad():
+            w.copy_(w0)
+        # print(f'w type: {type(w)}')
+        # while True:
+        #     continue
+        # torch.tensor(np.load(f'/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid3/raw/vq_centroid_client{self.client_id}.npy')).to(self.device)
         # if self.client_id in self.all_params_dict:
         #     prev = self.all_params_dict.get(self.client_id, self.init_personal_params_dict)
         #     print(f'prev: {list(prev.items())[:10]}')
