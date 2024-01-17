@@ -16,7 +16,7 @@ from .cvae import CVAEGenerator
 # from .InST.export import export_model
 # from .InST.ldm.models.diffusion.ddim import DDIMSampler
 # from .InST.ldm.models.diffusion.plms import PLMSSampler
-from .ddpm.export import export_trainer,  export_phoenix_trainer, export_vq_trainer
+from .ddpm.export import export_trainer,  export_phoenix_trainer, export_vq_trainer, export_lvq_trainer
 
 def get_model_arch(model_name):
     # static means the model arch is fixed.
@@ -578,7 +578,7 @@ class CustomModel(DecoupledGenModel):
         # The default forwarding process is: out = self.classifier(self.base(input))
         self.classes = NUM_CLASSES[dataset]
         # self.private = s
-        self.base, self.evaluator, self.image_dir = export_vq_trainer(train_device=device, eval_device=device, eval_total_size=10000)
+        self.base, self.evaluator, self.image_dir = export_lvq_trainer(train_device=device, eval_device=device, eval_total_size=1000)
         # print(f'image dir: {self.image_dir}')
         # while True:
         #     continue

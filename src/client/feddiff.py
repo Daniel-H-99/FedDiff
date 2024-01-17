@@ -324,10 +324,12 @@ class FedDiffClient:
         # personal params would overlap the dummy params from new_parameters from the same layerss
         self.model.load_state_dict(personal_parameters, strict=False)
 
-        w = self.model.base.model.private_context_generator.codebook.weight
-        w0 = torch.tensor(np.load(f'/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid3/raw/vq_centroid_client{self.client_id}.npy'))
-        with torch.no_grad():
-            w.copy_(w0)
+        if self.client_id not in self.personal_params_dict:
+            w = self.model.base.model.private_context_generator.codebook.weight
+            w0 = torch.tensor(np.load(f'/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid3/raw/vq_centroid_client{self.client_id}.npy'))
+            with torch.no_grad():
+                w.copy_(w0)
+            
         # print(f'w type: {type(w)}')
         # while True:
         #     continue
@@ -386,9 +388,10 @@ class FedDiffClient:
         
     def load_trainer(self, name):
         ppd_path = os.path.join(name + '_after.pt')
-        # opt_path = os.path.join(name + '_after_opt.pt')
+        opt_path = os.path.join(name + '_after_opt.pt')
         self.load_ppd(ppd_path)
-        # self.load_opt(opt_path)
+        if os.path.exists(opt_path):
+            self.load_opt(opt_path)
                                 
     def load_ppd(self, path):
         d = torch.load(path)

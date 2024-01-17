@@ -13,3 +13,5 @@ _images_fid
 images_fid
 phoenix
 *images_fid
+tmp_phoenix
+*.png
