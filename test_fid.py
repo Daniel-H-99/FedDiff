@@ -72,21 +72,30 @@ def calc_fid_dict(checkpoints):
     output = {}
     for ckpt in checkpoints:
         res = {}
+        rep = {}
         epoch = int(os.path.basename(ckpt).split('_')[2])
+        output[epoch] = {}
+        syn_all_path = os.path.join(image_fid_dir, f'{epoch}', 'local', 'all')
+        true_global_path = os.path.join(true_image_dir, 'all_50000', 'train')
+        all_global = calc_fid(syn_all_path, true_global_path)
         for client_id in range(CID, CID + 1):
             print(f'trying client id: {client_id}')
             syn_local_path = os.path.join(image_fid_dir, f'{epoch}', 'local', f'{client_id}')
-            syn_tmp_path = os.path.join(image_fid_dir, f'{epoch}', 'tmp')
-            syn_all_path = os.path.join(image_fid_dir, f'{epoch}', 'local', 'all')
             true_local_path = os.path.join(true_image_dir, f'{client_id}', 'train')
             syn_global_path = os.path.join(image_fid_dir, f'{epoch}', 'global', f'{client_id}')
-            true_global_path = os.path.join(true_image_dir, 'all_50000', 'train')
-            # res[f'local_local_client_{client_id}'] = calc_fid(syn_local_path, true_local_path)
+            res[f'local_local_client_{client_id}'] = calc_fid(syn_local_path, true_local_path)
             # res[f'local_global_client_{client_id}'] = calc_fid(syn_local_path, true_global_path)
-            res[f'global_global_client_{client_id}'] = calc_fid(syn_all_path, true_global_path)
+            # res[f'global_global_client_{client_id}'] = calc_fid(syn_all_path, true_global_path)
             # res[f'global_global_client_{client_id}'] = calc_fid(syn_global_path, true_global_path)
-        wandb.log(res, step=epoch)
-        output[epoch] = res
+            res[f'all_global_client_{client_id}'] = all_global
+            output[epoch][client_id] = res
+            for k in res.keys():
+                rep[k] = res[k]
+        keys = sorted(list(set(['_'.join(k.split('_')[:-1]) for k in rep.keys()])))
+        clients = list(range(5))
+        for key in keys:
+            rep[f'{k}_avg'] = np.array([rep[f'{key}_{cid}'] for cid in clients]).mean()
+        wandb.log(rep, step=epoch)
     return output
 
 def calc_privacy_dict(checkpoints):
@@ -95,6 +104,7 @@ def calc_privacy_dict(checkpoints):
     for ckpt in checkpoints:
         res = {}
         epoch = int(os.path.basename(ckpt).split('_')[2])
+        output[epoch] = {}
         for client_id in range(CID, CID + 1):
             print(f'trying client id: {client_id}')
             syn_local_path = os.path.join(image_fid_dir, f'{epoch}', 'local', f'{client_id}')
@@ -116,6 +126,7 @@ def calc_privacy2_dict(checkpoints):
     output = {}
     for ckpt in checkpoints:
         res = {}
+        rep = {}
         epoch = int(os.path.basename(ckpt).split('_')[2])
         output[epoch] = {}
         for client_id in range(0, 5):
@@ -132,9 +143,17 @@ def calc_privacy2_dict(checkpoints):
             res[f'local_train_client_{client_id}'] = calc_privacy2(syn_local_path, train_local_path, idx_1 = list(range(0, 1000)))
             res[f'other_train_client_{client_id}'] = calc_privacy2(syn_local_path, train_global_path, idx_1 = list(range(0, 1000)), idx_2=list(range(0, 10000 * client_id)) + list(range(10000 * (client_id + 1), 50000)))
             res[f'global_test_client_{client_id}'] = calc_privacy2(syn_local_path, test_global_path, idx_1 = list(range(0, 1000)))
-            # res[f'train_test_ratio_client_{client_id}'] = res[f'global_test_client_{client_id}'] / res[f'other_train_client_{client_id}'].clip(min=1e-6)
-            output[epoch][client_id] = res
-        wandb.log(res, step=epoch)
+            res[f'train_test_ratio_client_{client_id}'] = res[f'global_test_client_{client_id}'] / res[f'other_train_client_{client_id}'].clip(min=1e-6)
+            res[f'local_other_ratio_client_{client_id}'] = res[f'other_train_client_{client_id}'] / res[f'local_train_client_{client_id}'].clip(min=1e-6)
+            rep[f'local_train_ratio_client_{client_id}'] = calc_privacy2(syn_local_path, train_local_path, idx_1 = list(range(0, 1000)))
+            for k in res.keys():
+                rep[k] = res[k].mean()
+        keys = sorted(list(set(['_'.join(k.split('_')[:-1]) for k in rep.keys()])))
+        clients = list(range(5))
+        for key in keys:
+            rep[f'{k}_avg'] = np.array([rep[f'{key}_{cid}'] for cid in clients]).mean()
+        wandb.log(rep, step=epoch)
+
     return output
 
 
