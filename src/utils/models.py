@@ -98,6 +98,7 @@ NUM_CLASSES = {
     "cifar10_class0": 10,
     "cifar10_niid2": 10,
     "cifar10_niid3": 10,
+    "cifar10_iid": 10,
     "cinic10": 10,
     "cifar100": 100,
     "covid19": 4,
