@@ -20,7 +20,7 @@ true_image_dir = '/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid3/
 
 CID=0
 def init_wandb():
-    wandb.init(project='privacy', name=f'vqfed_cifar10_niid3_client{CID}')
+    wandb.init(project='privacy', name=f'fed_cifar10_niid3_client{CID}')
     
 def load_models(cls, args, ckpt_name):
     args.ckpt = ckpt_name
