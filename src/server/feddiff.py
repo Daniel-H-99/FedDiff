@@ -179,6 +179,7 @@ def get_feddiff_argparser() -> ArgumentParser:
             "cifar10_class0",
             "cifar10_niid2",
             "cifar10_niid3",
+            "cifar10_iid",
             "cifar100",
             "synthetic",
             "femnist",
@@ -210,7 +211,7 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("-mom", "--momentum", type=float, default=0.0)
     parser.add_argument("-wd", "--weight_decay", type=float, default=0.0)
     parser.add_argument("-vg", "--verbose_gap", type=int, default=1)
-    parser.add_argument("-bs", "--batch_size", type=int, default=128)
+    parser.add_argument("-bs", "--batch_size", type=int, default=64)
     parser.add_argument("-v", "--visible", type=int, default=0)
     parser.add_argument("--global_testset", type=int, default=0)
     parser.add_argument("--straggler_ratio", type=float, default=0)
@@ -221,12 +222,12 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("--save_model", type=int, default=0)
     parser.add_argument("--save_fig", type=int, default=1)
     parser.add_argument("--save_metrics", type=int, default=1)
-    parser.add_argument("--save_gap", type=int, default=5)
+    parser.add_argument("--save_gap", type=int, default=1)
     parser.add_argument("--viz_win_name", type=str, required=False)
     parser.add_argument("-cfg", "--config_file", type=str, default="")
     parser.add_argument("--check_convergence", type=int, default=1)
     parser.add_argument("--personal_tag", type=str, default=None)
-    parser.add_argument("--ckpt", type=str, default=None)
+    parser.add_argument("--ckpt", type=str, default='/home/server33/minyeong_workspace/FL-bench/out_cifar10_niid3_vqfedtune_trial1/FedDiff/checkpoints/cifar10_niid3_154_custom')
     return parser
 
 
@@ -334,7 +335,7 @@ class FedDiffServer:
 
 
         self.NUM_TRAINER = 5
-        self.NUM_GPU = 8
+        self.NUM_GPU = 7
         
         # To make sure all algorithms run through the same client sampling stream.
         # Some algorithms' implicit operations at client side may disturb the stream if sampling happens at each FL round's beginning.
@@ -346,7 +347,7 @@ class FedDiffServer:
             for _ in range(self.args.global_epoch)
         ]
         self.selected_clients: List[int] = []
-        self.current_epoch = 0
+        self.current_epoch = 154
         # For controlling behaviors of some specific methods while testing (not used by all methods)
         self.test_flag = False
 

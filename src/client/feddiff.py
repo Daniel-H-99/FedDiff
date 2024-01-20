@@ -200,7 +200,7 @@ class FedDiffClient:
         self.trainset.indices = all_indices[:-2000]
         self.testset.indices = all_indices[-2000:]
           
-        L = 128 * 400
+        L = 64 * 400
         st = (L * e) % len(self.trainset.indices)
         self.trainset.indices = np.concatenate([self.trainset.indices] * 12)[st: st + L]
     
@@ -324,16 +324,16 @@ class FedDiffClient:
         # personal params would overlap the dummy params from new_parameters from the same layerss
         self.model.load_state_dict(personal_parameters, strict=False)
 
-        # if self.client_id not in self.personal_params_dict:
-        #     w = self.model.base.model.private_context_generator.codebook.weight
-        #     w0 = torch.tensor(np.load(f'/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid3/raw/vq_centroid_client{self.client_id}.npy'))
-        #     with torch.no_grad():
-        #         w.copy_(w0)
+        if True:
+            w = self.model.base.model.private_context_generator.codebook.weight
+            w0 = torch.tensor(np.load(f'/home/server33/minyeong_workspace/FL-bench/data/cifar10_niid3/raw/vq_centroid_client{self.client_id}.npy'))
+            with torch.no_grad():
+                w.copy_(w0)
             
         # print(f'w type: {type(w)}')
         # while True:
         #     continue
-        # torch.tensor(np.load(f'/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid3/raw/vq_centroid_client{self.client_id}.npy')).to(self.device)
+        # torch.tensor(np.load(f'/home/server33/minyeong_workspace/FL-bench/data/cifar10_niid3/raw/vq_centroid_client{self.client_id}.npy')).to(self.device)
         # if self.client_id in self.all_params_dict:
         #     prev = self.all_params_dict.get(self.client_id, self.init_personal_params_dict)
         #     print(f'prev: {list(prev.items())[:10]}')
@@ -648,9 +648,9 @@ class FedDiffClient:
         os.makedirs(local_save_path, exist_ok=True)
         os.makedirs(global_save_path, exist_ok=True)
         os.makedirs(adv_save_path, exist_ok=True)
-        # fid_adv = self.model.evaluator.sample(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server36/minyeong_workspace/FL-bench/data/pathmnist/ref_fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, adv=True, save_path=adv_save_path)['fid'][0]
-        fid_local = self.model.evaluator.sample(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server36/minyeong_workspace/FL-bench/data/pathmnist/ref_fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, save_path=local_save_path)['fid'][0]
-        # fid_global = self.model.evaluator.sample(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server36/minyeong_workspace/FL-bench/data/pathmnist/ref_fid_stats_pathmnist.npz'], is_leader=True, save_path=global_save_path)['fid'][0]
+        # fid_adv = self.model.evaluator.sample(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/ref_fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, adv=True, save_path=adv_save_path)['fid'][0]
+        fid_local = self.model.evaluator.sample(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/ref_fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, save_path=local_save_path)['fid'][0]
+        # fid_global = self.model.evaluator.sample(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/ref_fid_stats_pathmnist.npz'], is_leader=True, save_path=global_save_path)['fid'][0]
         fid_adv = fid_local
         fid_global = fid_local
         
@@ -716,9 +716,9 @@ class FedDiffClient:
         print(f'evaluating')
         self.model.base.model.eval()
         save_path = os.path.join(self.image_dir, f'{self.client_id}_{epoch}.png')
-        fid_adv = self.model.evaluator.eval(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server36/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, adv=True)['fid'][0]
-        fid_local = self.model.evaluator.eval(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server36/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, save_path=save_path)['fid'][0]
-        fid_global = self.model.evaluator.eval(self.model.base.sample_fn, np.ones_like(self.label_dist[self.client_id]) / len(self.label_dist[self.client_id]), [f'/home/server36/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist.npz'], is_leader=True)['fid'][0]
+        fid_adv = self.model.evaluator.eval(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, adv=True)['fid'][0]
+        fid_local = self.model.evaluator.eval(self.model.base.sample_fn, self.label_dist[self.client_id], [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, save_path=save_path)['fid'][0]
+        fid_global = self.model.evaluator.eval(self.model.base.sample_fn, np.ones_like(self.label_dist[self.client_id]) / len(self.label_dist[self.client_id]), [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist.npz'], is_leader=True)['fid'][0]
 
         eval_results = [fid_local, fid_global, fid_adv]
         print(f'evaluated: {eval_results}')

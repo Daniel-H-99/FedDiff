@@ -795,6 +795,7 @@ DATASETS = {
     "cifar10_class0": CIFAR10,
     "cifar10_niid2": CIFAR10,
     "cifar10_niid3": CIFAR10,
+    "cifar10_iid": CIFAR10,
     "cifar100": CIFAR100,
     "mnist": MNIST,
     "mnist_niid2": MNIST,
