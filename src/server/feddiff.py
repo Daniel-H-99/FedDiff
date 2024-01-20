@@ -179,6 +179,7 @@ def get_feddiff_argparser() -> ArgumentParser:
             "cifar10_class0",
             "cifar10_niid2",
             "cifar10_niid3",
+            "cifar10_iid",
             "cifar100",
             "synthetic",
             "femnist",
