@@ -13,14 +13,14 @@ from scripts.gather_gen_images import todo
 import argparse
 sys.path.append(Path(__file__).parent.joinpath("src/server").absolute().as_posix())
 
-# image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/images_fid'
-# image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/tmp_phoenix'
-image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/out_cifar10_niid3_local_trial1/FedDiff/images_fid'
-true_image_dir = '/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid3/raw'
+# image_fid_dir = '/home/server31/minyeong_workspace/FL-bench/images_fid'
+# image_fid_dir = '/home/server31/minyeong_workspace/FL-bench/tmp_phoenix'
+image_fid_dir = '/home/server31/minyeong_workspace/FL-bench/out_cifar10_niid3_phoenixtune_trial1/FedDiff/images_fid'
+true_image_dir = '/home/server31/minyeong_workspace/FL-bench/data/cifar10_niid3/raw'
 
 CID=0
 def init_wandb():
-    wandb.init(project='privacy', name=f'local_cifar10_niid3_client{CID}')
+    wandb.init(project='v2_privacy', name=f'phoenixtune_cifar10_niid3_client{CID}')
     
 def load_models(cls, args, ckpt_name):
     args.ckpt = ckpt_name
@@ -77,7 +77,7 @@ def calc_fid_dict(checkpoints):
         epoch = int(os.path.basename(ckpt).split('_')[2])
         output[epoch] = {}
         syn_all_path = os.path.join(image_fid_dir, f'{epoch}', 'local', 'all')
-        true_global_path = os.path.join(true_image_dir, 'all_5000', 'train')
+        true_global_path = os.path.join(true_image_dir, 'all_50000', 'train')
         all_global = calc_fid(syn_all_path, true_global_path)
         for client_id in range(0, 5):
             print(f'trying client id: {client_id}')
@@ -95,7 +95,7 @@ def calc_fid_dict(checkpoints):
         keys = sorted(list(set(['_'.join(k.split('_')[:-1]) for k in rep.keys()])))
         clients = list(range(5))
         for key in keys:
-            rep[f'{k}_avg'] = np.array([rep[f'{key}_{cid}'] for cid in clients]).mean()
+            rep[f'{key}_avg'] = np.array([rep[f'{key}_{cid}'] for cid in clients]).mean()
         wandb.log(rep, step=epoch)
     return output
 
@@ -146,13 +146,12 @@ def calc_privacy2_dict(checkpoints):
             res[f'global_test_client_{client_id}'] = calc_privacy2(syn_local_path, test_global_path, idx_1 = list(range(0, 1000)))
             res[f'train_test_ratio_client_{client_id}'] = res[f'global_test_client_{client_id}'] / res[f'other_train_client_{client_id}'].clip(min=1e-6)
             res[f'local_other_ratio_client_{client_id}'] = res[f'other_train_client_{client_id}'] / res[f'local_train_client_{client_id}'].clip(min=1e-6)
-            rep[f'local_train_ratio_client_{client_id}'] = calc_privacy2(syn_local_path, train_local_path, idx_1 = list(range(0, 1000)))
             for k in res.keys():
                 rep[k] = res[k].mean()
         keys = sorted(list(set(['_'.join(k.split('_')[:-1]) for k in rep.keys()])))
         clients = list(range(5))
         for key in keys:
-            rep[f'{k}_avg'] = np.array([rep[f'{key}_{cid}'] for cid in clients]).mean()
+            rep[f'{key}_avg'] = np.array([rep[f'{key}_{cid}'] for cid in clients]).mean()
         wandb.log(rep, step=epoch)
 
     return output
@@ -187,9 +186,9 @@ def main():
     
     # print(f'loaded server')
     
-    ckpt_dir = f'/home/server36/minyeong_workspace/FL-bench/out_cifar10_niid3_local_trial1/FedDiff/checkpoints'
+    ckpt_dir = f'/home/server31/minyeong_workspace/FL-bench/out_cifar10_niid3_phoenixtune_trial1/FedDiff/checkpoints'
     files = sorted(list(set([int(f.split('_')[2]) for f in os.listdir(ckpt_dir) ])))
-    ckpt_name_list = [os.path.join(ckpt_dir, f"cifar10_niid3_{f}_custom") for f in files]
+    ckpt_name_list = [os.path.join(ckpt_dir, f"cifar10_niid3_{f}_custom") for f in files if f == 140]
     
     # print(f'ckpt_name_list: {ckpt_name_list}')
     # while True:
@@ -202,10 +201,10 @@ def main():
     #     print(f'{log}')
     
     
-    # cifar_src_path = '/home/server36/minyeong_workspace/ddpm-torch/images/eval/cifar10/cifar10_2040_ddim'
-    # # cifar_src_path = '/home/server36/minyeong_workspace/ddpm-torch/tmp'
-    # # cifar_tgt_path = '/home/server36/minyeong_workspace/FL-bench/data/cifar10/raw/all/train'
-    # cifar_tgt_path = '/home/server36/minyeong_workspace/FL-bench/data/cifar10/raw/_all/train'
+    # cifar_src_path = '/home/server31/minyeong_workspace/ddpm-torch/images/eval/cifar10/cifar10_2040_ddim'
+    # # cifar_src_path = '/home/server31/minyeong_workspace/ddpm-torch/tmp'
+    # # cifar_tgt_path = '/home/server31/minyeong_workspace/FL-bench/data/cifar10/raw/all/train'
+    # cifar_tgt_path = '/home/server31/minyeong_workspace/FL-bench/data/cifar10/raw/_all/train'
     # fid_dict = calc_fid_dict_external(cifar_src_path, cifar_tgt_path)
 
     # with open(f'tested_fid_fed_cifar10_client.pkl', 'wb') as f:
@@ -213,18 +212,18 @@ def main():
 
 
     
-    fid_dict = calc_fid_dict(ckpt_name_list)
-    with open(f'tested_fid_local_cifar10_niid3_client_{CID}.pkl', 'wb') as f:
-        pkl.dump(fid_dict, f)
+    # fid_dict = calc_fid_dict(ckpt_name_list)
+    # with open(f'tested_fid_local_cifar10_iid_client_{CID}.pkl', 'wb') as f:
+    #     pkl.dump(fid_dict, f)
 
         
     # privacy_dict = calc_privacy_dict(ckpt_name_list)
     # with open(f'tested_privacy_fed_class0_client_{CID}.pkl', 'wb') as f:
     #     pkl.dump(privacy_dict, f)
 
-    # privacy_dict = calc_privacy2_dict(ckpt_name_list)
-    # with open(f'tested_privacy2_phoenix_cifar10_niid3_client_{CID}.pkl', 'wb') as f:
-    #     pkl.dump(privacy_dict, f)
+    privacy_dict = calc_privacy2_dict(ckpt_name_list)
+    with open(f'tested_privacy2_phoenixtune_cifar10_niid3_client_{CID}.pkl', 'wb') as f:
+        pkl.dump(privacy_dict, f)
         
     print(f'done')
 
@@ -232,7 +231,7 @@ def main():
 
 # def task_checkpoint(ckpt_name, client_id=0):
 #     label_dist = {}
-#     with open('/home/server36/minyeong_workspace/FL-bench/data/pathmnist/all_stats.json', 'r') as f:
+#     with open('/home/server31/minyeong_workspace/FL-bench/data/pathmnist/all_stats.json', 'r') as f:
 #         d = json.load(f)
 #         for k, v in d.items():
 #             if k == 'sample per client':
@@ -245,9 +244,9 @@ def main():
 #     # print(f'dist 0: {label_dist[0]}')
 #     label_dist = label_dist
 #     base, eval, img_dir = export_trainer(device='cuda', eval_device='cuda', eval_total_size=3000)
-#     # fid_adv = eval.eval(base.sample_fn, self.label_dist[self.client_id], [f'/home/server36/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, adv=True)['fid'][0]
-#     fid_local = eval.eval(base.sample_fn, label_dist[client_id], [f'/home/server36/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist_client{client_id}.npz'], is_leader=True)['fid'][0]
-#     # fid_global = self.model.evaluator.eval(self.model.base.sample_fn, np.ones_like(self.label_dist[self.client_id]) / len(self.label_dist[self.client_id]), [f'/home/server36/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist.npz'], is_leader=True)['fid'][0]
+#     # fid_adv = eval.eval(base.sample_fn, self.label_dist[self.client_id], [f'/home/server31/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, adv=True)['fid'][0]
+#     fid_local = eval.eval(base.sample_fn, label_dist[client_id], [f'/home/server31/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist_client{client_id}.npz'], is_leader=True)['fid'][0]
+#     # fid_global = self.model.evaluator.eval(self.model.base.sample_fn, np.ones_like(self.label_dist[self.client_id]) / len(self.label_dist[self.client_id]), [f'/home/server31/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist.npz'], is_leader=True)['fid'][0]
 
 #     # eval_results = [fid_local, fid_global, fid_adv]
 #     print(f'evaluated local fid: {fid_local}')

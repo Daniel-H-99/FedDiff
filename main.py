@@ -7,7 +7,7 @@ sys.path.append(Path(__file__).parent.joinpath("src/server").absolute().as_posix
 
 
 def wandb_init():
-    return wandb.init(project="cifar10", name="cifar10_niid3_local_trial1")
+    return wandb.init(project="cifar10", name="cifar10_iid_local_trial1")
     
 if __name__ == "__main__":
     if len(sys.argv) < 2:

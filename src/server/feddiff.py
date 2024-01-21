@@ -179,6 +179,7 @@ def get_feddiff_argparser() -> ArgumentParser:
             "cifar10_class0",
             "cifar10_niid2",
             "cifar10_niid3",
+            "cifar10_iid",
             "cifar100",
             "synthetic",
             "femnist",
@@ -226,7 +227,7 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("-cfg", "--config_file", type=str, default="")
     parser.add_argument("--check_convergence", type=int, default=1)
     parser.add_argument("--personal_tag", type=str, default=None)
-    parser.add_argument("--ckpt", type=str, default=None)
+    parser.add_argument("--ckpt", type=str, default='/home/server31/minyeong_workspace/FL-bench/out_cifar10_iid_local_trial1/FedDiff/checkpoints/cifar10_iid_85_custom')
     return parser
 
 
@@ -346,7 +347,7 @@ class FedDiffServer:
             for _ in range(self.args.global_epoch)
         ]
         self.selected_clients: List[int] = []
-        self.current_epoch = 0
+        self.current_epoch = 85
         # For controlling behaviors of some specific methods while testing (not used by all methods)
         self.test_flag = False
 
