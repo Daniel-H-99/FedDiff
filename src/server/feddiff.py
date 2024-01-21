@@ -204,10 +204,10 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("-le", "--local_epoch", type=int, default=1)
     parser.add_argument("-fe", "--finetune_epoch", type=int, default=0)
     parser.add_argument("-tg", "--valid_gap", type=int, default=10000)
-    parser.add_argument("-eg", "--test_gap", type=int, default=1)
+    parser.add_argument("-eg", "--test_gap", type=int, default=5)
     parser.add_argument("-ee", "--eval_test", type=int, default=1)
     parser.add_argument("-er", "--eval_train", type=int, default=0)
-    parser.add_argument("-lr", "--local_lr", type=float, default=1e-3)
+    parser.add_argument("-lr", "--local_lr", type=float, default=2e-4)
     parser.add_argument("-mom", "--momentum", type=float, default=0.0)
     parser.add_argument("-wd", "--weight_decay", type=float, default=0.0)
     parser.add_argument("-vg", "--verbose_gap", type=int, default=1)
@@ -227,7 +227,7 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("-cfg", "--config_file", type=str, default="")
     parser.add_argument("--check_convergence", type=int, default=1)
     parser.add_argument("--personal_tag", type=str, default=None)
-    parser.add_argument("--ckpt", type=str, default=None)
+    parser.add_argument("--ckpt", type=str, default='/home/server32/minyeong_workspace/FL-bench/out_cifar10_niid3_phoenixlr_trial1/FedDiff/checkpoints/cifar10_niid3_210_custom')
     return parser
 
 
@@ -347,7 +347,7 @@ class FedDiffServer:
             for _ in range(self.args.global_epoch)
         ]
         self.selected_clients: List[int] = []
-        self.current_epoch = 0
+        self.current_epoch = 210
         # For controlling behaviors of some specific methods while testing (not used by all methods)
         self.test_flag = False
 

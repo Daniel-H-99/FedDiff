@@ -15,12 +15,12 @@ sys.path.append(Path(__file__).parent.joinpath("src/server").absolute().as_posix
 
 # image_fid_dir = '/home/server32/minyeong_workspace/FL-bench/images_fid'
 # image_fid_dir = '/home/server32/minyeong_workspace/FL-bench/tmp_phoenix'
-image_fid_dir = '/home/server32/minyeong_workspace/FL-bench/out_cifar10_niid3_phoenix_trial1/FedDiff/images_fid'
+image_fid_dir = '/home/server32/minyeong_workspace/FL-bench/out_cifar10_niid3_phoenixlr_trial1/FedDiff/images_fid'
 true_image_dir = '/home/server32/minyeong_workspace/FL-bench/data/cifar10_niid3/raw'
 
 CID=0
 def init_wandb():
-    wandb.init(project='v2_privacy', name=f'phoenix_cifar10_niid3_client{CID}')
+    wandb.init(project='v2_fid', name=f'(continued) phoenixlr_cifar10_niid3_client{CID}')
     
 def load_models(cls, args, ckpt_name):
     args.ckpt = ckpt_name
@@ -77,14 +77,14 @@ def calc_fid_dict(checkpoints):
         epoch = int(os.path.basename(ckpt).split('_')[2])
         output[epoch] = {}
         syn_all_path = os.path.join(image_fid_dir, f'{epoch}', 'local', 'all')
-        true_global_path = os.path.join(true_image_dir, 'all_50000', 'train')
+        true_global_path = os.path.join(true_image_dir, 'all_5000', 'train')
         all_global = calc_fid(syn_all_path, true_global_path)
         for client_id in range(0, 5):
             print(f'trying client id: {client_id}')
             syn_local_path = os.path.join(image_fid_dir, f'{epoch}', 'local', f'{client_id}')
             true_local_path = os.path.join(true_image_dir, f'{client_id}', 'train')
             syn_global_path = os.path.join(image_fid_dir, f'{epoch}', 'global', f'{client_id}')
-            res[f'local_local_client_{client_id}'] = calc_fid(syn_local_path, true_local_path)
+            # res[f'local_local_client_{client_id}'] = calc_fid(syn_local_path, true_local_path)
             # res[f'local_global_client_{client_id}'] = calc_fid(syn_local_path, true_global_path)
             # res[f'global_global_client_{client_id}'] = calc_fid(syn_all_path, true_global_path)
             # res[f'global_global_client_{client_id}'] = calc_fid(syn_global_path, true_global_path)
@@ -186,9 +186,9 @@ def main():
     
     # print(f'loaded server')
     
-    ckpt_dir = f'/home/server32/minyeong_workspace/FL-bench/out_cifar10_niid3_phoenix_trial1/FedDiff/checkpoints'
+    ckpt_dir = f'/home/server32/minyeong_workspace/FL-bench/out_cifar10_niid3_phoenixlr_trial1/FedDiff/checkpoints'
     files = sorted(list(set([int(f.split('_')[2]) for f in os.listdir(ckpt_dir) ])))
-    ckpt_name_list = [os.path.join(ckpt_dir, f"cifar10_niid3_{f}_custom") for f in [131]]
+    ckpt_name_list = [os.path.join(ckpt_dir, f"cifar10_niid3_{f}_custom") for f in files if (f > 200) and (f <= 355)]
     
     # print(f'ckpt_name_list: {ckpt_name_list}')
     # while True:
@@ -212,18 +212,18 @@ def main():
 
 
     
-    # fid_dict = calc_fid_dict(ckpt_name_list)
-    # with open(f'tested_fid_phoenix_cifar10_iid_client_{CID}.pkl', 'wb') as f:
-    #     pkl.dump(fid_dict, f)
+    fid_dict = calc_fid_dict(ckpt_name_list)
+    with open(f'tested_fid_phoenixlr_cifar10_niid3_client_{CID}.pkl', 'wb') as f:
+        pkl.dump(fid_dict, f)
 
         
     # privacy_dict = calc_privacy_dict(ckpt_name_list)
     # with open(f'tested_privacy_fed_class0_client_{CID}.pkl', 'wb') as f:
     #     pkl.dump(privacy_dict, f)
 
-    privacy_dict = calc_privacy2_dict(ckpt_name_list)
-    with open(f'tested_privacy2_phoenix_cifar10_niid3_client_{CID}.pkl', 'wb') as f:
-        pkl.dump(privacy_dict, f)
+    # privacy_dict = calc_privacy2_dict(ckpt_name_list)
+    # with open(f'tested_privacy2_phoenixlr_cifar10_niid3_client_{CID}.pkl', 'wb') as f:
+    #     pkl.dump(privacy_dict, f)
         
     print(f'done')
 
