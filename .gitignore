@@ -1,3 +1,5 @@
+data/_femnist
+data/femnist
 out*
 data/cifar*
 data/pathmnist*
@@ -16,3 +18,4 @@ phoenix
 tmp_phoenix
 *.png
 data/femnist
+data/leaf*
