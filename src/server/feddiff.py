@@ -13,7 +13,8 @@ import wandb
 import torch.multiprocessing as mp
 import torch
 import subprocess
-
+import copy
+from contextlib import closing
 torch.multiprocessing.set_sharing_strategy('file_system')
 # def work(model):
 #     print(f'trainer id: {model.model.base.num_classes}')
@@ -204,7 +205,7 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("-le", "--local_epoch", type=int, default=1)
     parser.add_argument("-fe", "--finetune_epoch", type=int, default=0)
     parser.add_argument("-tg", "--valid_gap", type=int, default=10000)
-    parser.add_argument("-eg", "--test_gap", type=int, default=5)
+    parser.add_argument("-eg", "--test_gap", type=int, default=10000)
     parser.add_argument("-ee", "--eval_test", type=int, default=1)
     parser.add_argument("-er", "--eval_train", type=int, default=0)
     parser.add_argument("-lr", "--local_lr", type=float, default=2e-4)
@@ -222,12 +223,12 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("--save_model", type=int, default=0)
     parser.add_argument("--save_fig", type=int, default=1)
     parser.add_argument("--save_metrics", type=int, default=1)
-    parser.add_argument("--save_gap", type=int, default=5)
+    parser.add_argument("--save_gap", type=int, default=1)
     parser.add_argument("--viz_win_name", type=str, required=False)
     parser.add_argument("-cfg", "--config_file", type=str, default="")
     parser.add_argument("--check_convergence", type=int, default=1)
     parser.add_argument("--personal_tag", type=str, default=None)
-    parser.add_argument("--ckpt", type=str, default='/home/server32/minyeong_workspace/FL-bench/out_cifar10_niid3_phoenixlr_trial1/FedDiff/checkpoints/cifar10_niid3_210_custom')
+    parser.add_argument("--ckpt", type=str, default='/home/server32/minyeong_workspace/FL-bench/out_femnist_niid_phoenix_trial1/FedDiff/checkpoints/femnist_5_custom')
     return parser
 
 
@@ -261,11 +262,11 @@ class FedDiffServer:
                 partition = pickle.load(f)
         except:
             raise FileNotFoundError(f"Please partition {args.dataset} first.")
-        self.train_clients: List[int] = partition["separation"]["train"][:5]
-        self.test_clients: List[int] = partition["separation"]["test"][:5]
+        self.train_clients: List[int] = partition["separation"]["train"][:376]
+        self.test_clients: List[int] = partition["separation"]["test"][:376]
 
         # self.client_num: int = partition["separation"]["total"]
-        self.client_num: int = 5
+        self.client_num: int = 376
 
         # init model(s) parameters
         self.device = get_best_device(self.args.use_cuda)
@@ -334,20 +335,25 @@ class FedDiffServer:
             random.shuffle(self.clients_local_epoch)
 
 
-        self.NUM_TRAINER = 5
+        self.NUM_TRAINER = 7
         self.NUM_GPU = 8
         
         # To make sure all algorithms run through the same client sampling stream.
         # Some algorithms' implicit operations at client side may disturb the stream if sampling happens at each FL round's beginning.
         self.client_sample_stream = [
             random.sample(
-                self.train_clients, max(1, len(self.train_clients))
+                list(range(53)), 35 
                 # self.train_clients, max(1, int(self.client_num * self.args.join_ratio))
             )
             for _ in range(self.args.global_epoch)
         ]
+        self.max_cnt = (375 - torch.arange(self.NUM_TRAINER)) // self.NUM_TRAINER
+        
+        # print(f'max: {self.max_cnt}')
+        # while True:
+        #     continue
         self.selected_clients: List[int] = []
-        self.current_epoch = 210
+        self.current_epoch = 5
         # For controlling behaviors of some specific methods while testing (not used by all methods)
         self.test_flag = False
 
@@ -453,7 +459,7 @@ class FedDiffServer:
         self.proc = None
             
     def get_epoch(self, f):
-        return int(f.split('_')[2])
+        return int(f.split('_')[1])
     
     def update_last_optimizer_checkpoint(self, save_dir):
         opt_checkpoints = [f for f in os.listdir(save_dir) if 'opt' in f]
@@ -499,7 +505,11 @@ class FedDiffServer:
             #         torch.save(self.global_params_dict, save_dir / model_name)
             #     self.trainer.save_client(E + 1, save_dir, before=True)
                 
-            self.selected_clients = self.client_sample_stream[E]
+            sc = self.client_sample_stream[E]
+            self.selected_clients = (torch.arange(self.NUM_TRAINER)[None] + (torch.tensor(sc).view(-1, self.NUM_TRAINER) % self.max_cnt) * self.NUM_TRAINER).view(-1).tolist()
+            # print(f'clients: {len(self.selected_clients)}')
+            # while True:
+            #     continue
             begin = time.time()
             self.train_one_round()
 
@@ -540,10 +550,11 @@ class FedDiffServer:
 
     def generate_task(self, client_ids):
         tasks = [(self.trainers[i], [], [], [], ((self.current_epoch + 1) % self.args.verbose_gap) == 0, self.current_epoch) for i in range(len(self.trainers))]
+        tasks = {i: [] for i in range(len(self.trainers))}
         for cid in client_ids:
-            tasks[self.client_location(cid)][1].append(self.generate_client_params(cid))
-            tasks[self.client_location(cid)][2].append(cid)
-            tasks[self.client_location(cid)][3].append(self.clients_local_epoch[cid])
+            i = self.client_location(cid)
+            task = (self.trainers[i], [self.generate_client_params(cid)], [cid], [self.clients_local_epoch[cid]], ((self.current_epoch + 1) % self.args.verbose_gap) == 0, self.current_epoch)
+            tasks[i].append(task)
         return tasks
     
     def generate_test_task(self, client_ids):
@@ -593,18 +604,20 @@ class FedDiffServer:
         start_time = time.time()
 
         tasks = self.generate_task(self.selected_clients)
-        # print(f'tasks: {tasks}')
+        
+        # print(f'tasks: {[len(v[2]) for v in tasks]}')
         # while True:
         #     continue
 
         # with futures.ThreadPoolExecutor(8) as executor:
         #     results = executor.map(work, tasks)
 
-        with mp.Pool(self.NUM_TRAINER) as pool:
-            res = pool.map(work_train, tasks)
-
-        res = list(res)
-        
+        res = []
+        for small_tasks in zip(*[tasks[k] for k in range(self.NUM_TRAINER)]):
+            with closing(mp.Pool(self.NUM_TRAINER)) as pool:
+                _res = pool.map(work_train, small_tasks)
+            res.extend(list(copy.deepcopy(_res)))
+            del _res
         print(f'aggregating')
         
         for s, d, w, r in res:
@@ -630,6 +643,9 @@ class FedDiffServer:
         befores = sum(befores) / len(befores)
         afters = sum(afters) / len(afters)
         loss_logs = sum(loss_logs) / len(loss_logs)
+        # befores = 0
+        # afters = 0
+        # loss_logs = 0
         wandb.log({f'test_loss_before_avg': befores})
         wandb.log({f'test_loss_after_avg': afters})
         wandb.log({f'loss_logs_avg': loss_logs})

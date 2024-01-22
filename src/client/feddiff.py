@@ -195,14 +195,16 @@ class FedDiffClient:
     def load_train_dataset(self, e):
         """This function is for loading data indices for No.`self.client_id` client."""
         all_indices = np.concatenate([self.data_indices[self.client_id]["train"], self.data_indices[self.client_id]["test"]])
-        # self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
-        # self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
-        self.trainset.indices = all_indices[:-2000]
-        self.testset.indices = all_indices[-2000:]
+        self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
+        self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
+        # self.trainset.indices = all_indices[:-2000]
+        # self.testset.indices = all_indices[-2000:]
           
-        L = 128 * 400
+        full_size = len(self.trainset.indices)
+        print(f'full_size: {full_size}')
+        L = full_size * 20
         st = (L * e) % len(self.trainset.indices)
-        self.trainset.indices = np.concatenate([self.trainset.indices] * 12)[st: st + L]
+        self.trainset.indices = np.concatenate([self.trainset.indices] * 21)[st: st + L]
     
         # self.trainset.indices = self.train_idc[self.client_id]
         # self.testset.indices = self.test_idc[self.client_id]
@@ -215,10 +217,10 @@ class FedDiffClient:
     def load_dataset(self):
         """This function is for loading data indices for No.`self.client_id` client."""
         all_indices = np.concatenate([self.data_indices[self.client_id]["train"], self.data_indices[self.client_id]["test"]])
-        # self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
-        # self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
-        self.trainset.indices = all_indices[:-1000]
-        self.testset.indices = all_indices[-1000:]
+        self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
+        self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
+        # self.trainset.indices = all_indices[:-1000]
+        # self.testset.indices = all_indices[-1000:]
     
     
         # self.trainset.indices = self.train_idc[self.client_id]
@@ -378,9 +380,9 @@ class FedDiffClient:
         # 31it [00:00, 49.00it/s]opt state dict value types: [('step', <class 'torch.Tensor'>), ('exp_avg', <class 'torch.Tensor'>), ('exp_avg_sq', <class 'torch.Tensor'>)] 
         # while True:
         #     continue
-        self.optimizer_to('cpu')
-        self.opt_state_dict[self.client_id] = deepcopy(self.optimizer.state_dict())
-        self.optimizer_to(self.device)
+        # self.optimizer_to('cpu')
+        # self.opt_state_dict[self.client_id] = deepcopy(self.optimizer.state_dict())
+        # self.optimizer_to(self.device)
         # self.all_params_dict[self.client_id] = {
         #     key: param.clone().detach().cpu()
         #     for key, param in self.model.state_dict(keep_vars=True).items()

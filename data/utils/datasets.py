@@ -100,6 +100,37 @@ class InSTBaseDataset(Dataset):
         return len(self.targets)
         # return 10
 
+# class FEMNIST(BaseDataset):
+#     def __init__(
+#         self,
+#         root,
+#         args=None,
+#         general_data_transform=None,
+#         general_target_transform=None,
+#         train_data_transform=None,
+#         train_target_transform=None,
+#     ) -> None:
+#         super().__init__()
+#         if not isinstance(root, Path):
+#             root = Path(root)
+#         if not os.path.isfile(root / "data.npy") or not os.path.isfile(
+#             root / "targets.npy"
+#         ):
+#             raise RuntimeError(
+#                 "run data/utils/run.py -d femnist for generating the data.npy and targets.npy first."
+#             )
+
+#         data = np.load(root / "data.npy")
+#         targets = np.load(root / "targets.npy")
+
+#         self.data = torch.from_numpy(data).float().reshape(-1, 1, 28, 28)
+#         self.targets = torch.from_numpy(targets).long()
+#         self.classes = list(range(62))
+#         self.general_data_transform = general_data_transform
+#         self.general_target_transform = general_target_transform
+#         self.train_data_transform = train_data_transform
+#         self.train_target_transform = train_target_transform
+
 class FEMNIST(BaseDataset):
     def __init__(
         self,
@@ -109,28 +140,20 @@ class FEMNIST(BaseDataset):
         general_target_transform=None,
         train_data_transform=None,
         train_target_transform=None,
-    ) -> None:
+    ):
         super().__init__()
         if not isinstance(root, Path):
             root = Path(root)
-        if not os.path.isfile(root / "data.npy") or not os.path.isfile(
-            root / "targets.npy"
-        ):
-            raise RuntimeError(
-                "run data/utils/run.py -d femnist for generating the data.npy and targets.npy first."
-            )
-
-        data = np.load(root / "data.npy")
-        targets = np.load(root / "targets.npy")
-
-        self.data = torch.from_numpy(data).float().reshape(-1, 1, 28, 28)
-        self.targets = torch.from_numpy(targets).long()
+        self.classes = list(range(11))
+        self.data = torch.Tensor(np.load(root / "raw" / "xdata.npy")).float().permute(0, 3, 1, 2)
+        # self.targets = torch.Tensor(np.load(root / "raw" / "ydata.npy")).long().squeeze()
+        self.targets = torch.zeros_like(torch.Tensor(np.load(root / "raw" / "ydata.npy"))).long().squeeze()
         self.classes = list(range(62))
         self.general_data_transform = general_data_transform
         self.general_target_transform = general_target_transform
         self.train_data_transform = train_data_transform
         self.train_target_transform = train_target_transform
-
+        
 
 class Synthetic(BaseDataset):
     def __init__(
