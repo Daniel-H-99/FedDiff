@@ -222,7 +222,7 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("--save_model", type=int, default=0)
     parser.add_argument("--save_fig", type=int, default=1)
     parser.add_argument("--save_metrics", type=int, default=1)
-    parser.add_argument("--save_gap", type=int, default=1)
+    parser.add_argument("--save_gap", type=int, default=20)
     parser.add_argument("--viz_win_name", type=str, required=False)
     parser.add_argument("-cfg", "--config_file", type=str, default="")
     parser.add_argument("--check_convergence", type=int, default=1)
@@ -261,11 +261,11 @@ class FedDiffServer:
                 partition = pickle.load(f)
         except:
             raise FileNotFoundError(f"Please partition {args.dataset} first.")
-        self.train_clients: List[int] = partition["separation"]["train"][:376]
-        self.test_clients: List[int] = partition["separation"]["test"][:376]
+        self.train_clients: List[int] = partition["separation"]["train"][20:40]
+        self.test_clients: List[int] = partition["separation"]["test"][20:40]
 
         # self.client_num: int = partition["separation"]["total"]
-        self.client_num: int = 376
+        self.client_num: int = 20
 
         # init model(s) parameters
         self.device = get_best_device(self.args.use_cuda)
@@ -318,7 +318,7 @@ class FedDiffServer:
 
 
         # system heterogeneity (straggler) setting
-        self.clients_local_epoch: List[int] = [self.args.local_epoch] * self.client_num
+        self.clients_local_epoch: Dict[int] = {v: self.args.local_epoch for v in self.train_clients}
         if (
             self.args.straggler_ratio > 0
             and self.args.local_epoch > self.args.straggler_min_local_epoch
@@ -341,8 +341,7 @@ class FedDiffServer:
         # Some algorithms' implicit operations at client side may disturb the stream if sampling happens at each FL round's beginning.
         self.client_sample_stream = [
             random.sample(
-                list(range(53)), 35 
-                # self.train_clients, max(1, int(self.client_num * self.args.join_ratio))
+                self.train_clients, max(1, int(self.client_num))
             )
             for _ in range(self.args.global_epoch)
         ]
