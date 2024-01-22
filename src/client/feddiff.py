@@ -119,8 +119,8 @@ class FedDiffClient:
 
         label_dist = {}
 
-        for k in range(10):
-            dist = np.zeros(10)
+        for k in range(376):
+            dist = np.zeros(62)
             # for _k, _v in v['y'].items():
             #     dist[int(_k)] = _v
             # dist = dist / dist.sum()
