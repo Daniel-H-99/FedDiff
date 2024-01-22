@@ -223,12 +223,12 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("--save_model", type=int, default=0)
     parser.add_argument("--save_fig", type=int, default=1)
     parser.add_argument("--save_metrics", type=int, default=1)
-    parser.add_argument("--save_gap", type=int, default=1)
+    parser.add_argument("--save_gap", type=int, default=5)
     parser.add_argument("--viz_win_name", type=str, required=False)
     parser.add_argument("-cfg", "--config_file", type=str, default="")
     parser.add_argument("--check_convergence", type=int, default=1)
     parser.add_argument("--personal_tag", type=str, default=None)
-    parser.add_argument("--ckpt", type=str, default='/home/server32/minyeong_workspace/FL-bench/out_femnist_niid_phoenix_trial1/FedDiff/checkpoints/femnist_5_custom')
+    parser.add_argument("--ckpt", type=str, default='/home/server33/minyeong_workspace/FL-bench/out_femnist_niid_phoenix_trial1/FedDiff/checkpoints/femnist_55_custom')
     return parser
 
 
@@ -336,7 +336,7 @@ class FedDiffServer:
 
 
         self.NUM_TRAINER = 7
-        self.NUM_GPU = 8
+        self.NUM_GPU = 7
         
         # To make sure all algorithms run through the same client sampling stream.
         # Some algorithms' implicit operations at client side may disturb the stream if sampling happens at each FL round's beginning.
@@ -353,7 +353,7 @@ class FedDiffServer:
         # while True:
         #     continue
         self.selected_clients: List[int] = []
-        self.current_epoch = 5
+        self.current_epoch = 55
         # For controlling behaviors of some specific methods while testing (not used by all methods)
         self.test_flag = False
 
