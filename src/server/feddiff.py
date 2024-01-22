@@ -211,7 +211,7 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("-mom", "--momentum", type=float, default=0.0)
     parser.add_argument("-wd", "--weight_decay", type=float, default=0.0)
     parser.add_argument("-vg", "--verbose_gap", type=int, default=1)
-    parser.add_argument("-bs", "--batch_size", type=int, default=64)
+    parser.add_argument("-bs", "--batch_size", type=int, default=128)
     parser.add_argument("-v", "--visible", type=int, default=0)
     parser.add_argument("--global_testset", type=int, default=0)
     parser.add_argument("--straggler_ratio", type=float, default=0)
@@ -227,7 +227,7 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("-cfg", "--config_file", type=str, default="")
     parser.add_argument("--check_convergence", type=int, default=1)
     parser.add_argument("--personal_tag", type=str, default=None)
-    parser.add_argument("--ckpt", type=str, default='/home/server33/minyeong_workspace/FL-bench/out_cifar10_niid3_vqfedlr_trial1/FedDiff/checkpoints/cifar10_niid3_300_custom')
+    parser.add_argument("--ckpt", type=str, default='/home/server33/minyeong_workspace/FL-bench/out_cifar10_iid_vqfed_trial1/FedDiff/checkpoints/cifar10_iid_155_custom')
     return parser
 
 
@@ -347,7 +347,7 @@ class FedDiffServer:
             for _ in range(self.args.global_epoch)
         ]
         self.selected_clients: List[int] = []
-        self.current_epoch = 300
+        self.current_epoch = 155
         # For controlling behaviors of some specific methods while testing (not used by all methods)
         self.test_flag = False
 

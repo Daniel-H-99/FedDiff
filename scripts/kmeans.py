@@ -3,7 +3,7 @@ import json
 from PIL import Image
 import matplotlib.pyplot as plt
 import sys
-sys.path.append('/home/server36/minyeong_workspace/FL-bench')
+sys.path.append('/home/server33/minyeong_workspace/FL-bench')
 from data.utils.datasets import PathMNIST
 
 import torch
@@ -35,10 +35,10 @@ transform = transforms.Compose([
     transforms.Normalize(mean, std)]
 )
 
-data_path = 'data/cifar10_niid3/raw'
+data_path = 'data/femnist/raw'
 xdata = np.load(os.path.join(data_path, 'xdata.npy'))
 ydata = np.load(os.path.join(data_path, 'ydata.npy'))
-parition = pkl.load(open('data/cifar10_niid3/partition.pkl', 'rb'))
+parition = pkl.load(open('data/femnist/partition.pkl', 'rb'))
 indices = [np.concatenate([p['train'], p['test']]) for p in parition['data_indices']]
 train_indices = [idx[:int(0.9 * len(idx))] for idx in indices]
 print(f'x data shape: {xdata.shape}')
@@ -57,9 +57,11 @@ print(f'embed shape: {all_embeds.shape}')
 
 for cid, idx in tqdm(enumerate(train_indices)):
     X = all_embeds[idx]
-    N_MEANS = 256
+    N_MEANS = min(32, len(X))
     kmeans = KMeans(n_clusters=N_MEANS, random_state=0, n_init="auto").fit(X)
     centroids = kmeans.cluster_centers_
+    if len(centroids) < 32:
+        centroids = np.concatenate([centroids, np.zeros_like(centroids[:1]).repeat(32 - len(centroids), axis=0)])
     np.save(f'{data_path}/vq_centroid_client{cid}.npy', centroids)
 
 

@@ -200,9 +200,9 @@ class FedDiffClient:
         self.trainset.indices = all_indices[:-2000]
         self.testset.indices = all_indices[-2000:]
           
-        L = 64 * 400
+        L = 128 * 400
         st = (L * e) % len(self.trainset.indices)
-        self.trainset.indices = np.concatenate([self.trainset.indices] * 12)[st: st + L]
+        self.trainset.indices = np.concatenate([self.trainset.indices] * 25)[st: st + L]
     
         # self.trainset.indices = self.train_idc[self.client_id]
         # self.testset.indices = self.test_idc[self.client_id]
@@ -217,8 +217,8 @@ class FedDiffClient:
         all_indices = np.concatenate([self.data_indices[self.client_id]["train"], self.data_indices[self.client_id]["test"]])
         # self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
         # self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
-        self.trainset.indices = all_indices[:-1000]
-        self.testset.indices = all_indices[-1000:]
+        self.trainset.indices = all_indices[:-2000]
+        self.testset.indices = all_indices[-2000:]
     
     
         # self.trainset.indices = self.train_idc[self.client_id]

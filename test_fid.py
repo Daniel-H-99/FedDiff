@@ -15,12 +15,12 @@ sys.path.append(Path(__file__).parent.joinpath("src/server").absolute().as_posix
 
 # image_fid_dir = '/home/server33/minyeong_workspace/FL-bench/images_fid'
 # image_fid_dir = '/home/server33/minyeong_workspace/FL-bench/tmp_phoenix'
-image_fid_dir = '/home/server33/minyeong_workspace/FL-bench/out_cifar10_niid3_vqfedlr_trial1/FedDiff/images_fid'
-true_image_dir = '/home/server33/minyeong_workspace/FL-bench/data/cifar10_niid3/raw'
+image_fid_dir = '/home/server33/minyeong_workspace/FL-bench/out_cifar10_iid_vqfed_trial1/FedDiff/images_fid'
+true_image_dir = '/home/server33/minyeong_workspace/FL-bench/data/cifar10_iid/raw'
 
 CID=0
 def init_wandb():
-    wandb.init(project='v2_fid', name=f'(continued) vqfedlr_cifar10_niid3_client{CID}')
+    wandb.init(project='v2_fid', name=f'vqfed_cifar10_iid_client{CID}')
     
 def load_models(cls, args, ckpt_name):
     args.ckpt = ckpt_name
@@ -187,9 +187,9 @@ def main():
     
     # print(f'loaded server')
     
-    ckpt_dir = f'/home/server33/minyeong_workspace/FL-bench/out_cifar10_niid3_vqfedlr_trial1/FedDiff/checkpoints'
+    ckpt_dir = f'/home/server33/minyeong_workspace/FL-bench/out_cifar10_iid_vqfed_trial1/FedDiff/checkpoints'
     files = sorted(list(set([int(f.split('_')[2]) for f in os.listdir(ckpt_dir) ])))
-    ckpt_name_list = [os.path.join(ckpt_dir, f"cifar10_niid3_{f}_custom") for f in files if (f >= 300) and (f <= 390)]
+    ckpt_name_list = [os.path.join(ckpt_dir, f"cifar10_iid_{f}_custom") for f in files if f <=150]
     
     # print(f'ckpt_name_list: {ckpt_name_list}')
     # while True:
@@ -214,7 +214,7 @@ def main():
 
     
     fid_dict = calc_fid_dict(ckpt_name_list)
-    with open(f'tested_fid_vqfedlr_cifar10_niid3_client_{CID}.pkl', 'wb') as f:
+    with open(f'tested_fid_vqfed_cifar10_iid_client_{CID}.pkl', 'wb') as f:
         pkl.dump(fid_dict, f)
 
         
@@ -223,7 +223,7 @@ def main():
     #     pkl.dump(privacy_dict, f)g
 
     # privacy_dict = calc_privacy2_dict(ckpt_name_list)
-    # with open(f'tested_privacy2_vqfedlr_cifar10_niid3_client_{CID}.pkl', 'wb') as f:
+    # with open(f'tested_privacy2_vqfed_cifar10_iid_client_{CID}.pkl', 'wb') as f:
     #     pkl.dump(privacy_dict, f)
         
     print(f'done')
