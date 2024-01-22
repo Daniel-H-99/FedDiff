@@ -119,8 +119,8 @@ class FedDiffClient:
 
         label_dist = {}
 
-        for k in range(10):
-            dist = np.zeros(10)
+        for k in range(376):
+            dist = np.zeros(62)
             # for _k, _v in v['y'].items():
             #     dist[int(_k)] = _v
             # dist = dist / dist.sum()
@@ -327,7 +327,7 @@ class FedDiffClient:
 
         if True:
             w = self.model.base.model.private_context_generator.codebook.weight
-            w0 = torch.tensor(np.load(f'/home/server33/minyeong_workspace/FL-bench/data/cifar10_niid3/raw/vq_centroid_client{self.client_id}.npy'))
+            w0 = torch.tensor(np.load(f'/home/server33/minyeong_workspace/FL-bench/data/femnist/raw/vq_centroid_client{self.client_id}.npy'))
             with torch.no_grad():
                 w.copy_(w0)
             
@@ -379,9 +379,9 @@ class FedDiffClient:
         # 31it [00:00, 49.00it/s]opt state dict value types: [('step', <class 'torch.Tensor'>), ('exp_avg', <class 'torch.Tensor'>), ('exp_avg_sq', <class 'torch.Tensor'>)] 
         # while True:
         #     continue
-        self.optimizer_to('cpu')
-        self.opt_state_dict[self.client_id] = deepcopy(self.optimizer.state_dict())
-        self.optimizer_to(self.device)
+        # self.optimizer_to('cpu')
+        # self.opt_state_dict[self.client_id] = deepcopy(self.optimizer.state_dict())
+        # self.optimizer_to(self.device)
         # self.all_params_dict[self.client_id] = {
         #     key: param.clone().detach().cpu()
         #     for key, param in self.model.state_dict(keep_vars=True).items()

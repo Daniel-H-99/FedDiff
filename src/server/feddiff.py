@@ -341,12 +341,12 @@ class FedDiffServer:
         # Some algorithms' implicit operations at client side may disturb the stream if sampling happens at each FL round's beginning.
         self.client_sample_stream = [
             random.sample(
-                self.train_clients, max(1, 35)
-                # self.train_clients, max(1, len(self.train_clients))
+                list(range(53)), 35 
                 # self.train_clients, max(1, int(self.client_num * self.args.join_ratio))
             )
             for _ in range(self.args.global_epoch)
         ]
+        self.max_cnt = (375 - torch.arange(self.NUM_TRAINER)) // self.NUM_TRAINER
         self.selected_clients: List[int] = []
         self.current_epoch = 0
         # For controlling behaviors of some specific methods while testing (not used by all methods)

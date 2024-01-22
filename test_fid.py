@@ -14,13 +14,13 @@ import argparse
 sys.path.append(Path(__file__).parent.joinpath("src/server").absolute().as_posix())
 
 # image_fid_dir = '/home/server33/minyeong_workspace/FL-bench/images_fid'
-# image_fid_dir = '/home/server33/minyeong_workspace/FL-bench/tmp_phoenix'
-image_fid_dir = '/home/server33/minyeong_workspace/FL-bench/out_cifar10_niid3_vqfedlr_trial1/FedDiff/images_fid'
-true_image_dir = '/home/server33/minyeong_workspace/FL-bench/data/cifar10_niid3/raw'
+# image_fid_dir = '/home/server33/minyeong_workspace/FL-bench/tmp_vqfed'
+image_fid_dir = '/home/server33/minyeong_workspace/FL-bench/out_femnist_niid_vqfed_trial1/FedDiff/images_fid'
+true_image_dir = '/home/server33/minyeong_workspace/FL-bench/data/femnist/raw'
 
 CID=0
 def init_wandb():
-    wandb.init(project='v2_fid', name=f'(continued) vqfedlr_cifar10_niid3_client{CID}')
+    wandb.init(project='v2_fid', name=f'vqfed_femnist_niid_client{CID}')
     
 def load_models(cls, args, ckpt_name):
     args.ckpt = ckpt_name
@@ -74,10 +74,10 @@ def calc_fid_dict(checkpoints):
     for ckpt in checkpoints:
         res = {}
         rep = {}
-        epoch = int(os.path.basename(ckpt).split('_')[2])
+        epoch = int(os.path.basename(ckpt).split('_')[1])
         output[epoch] = {}
         syn_all_path = os.path.join(image_fid_dir, f'{epoch}', 'local', 'all')
-        true_global_path = os.path.join(true_image_dir, 'all_5000', 'train')
+        true_global_path = os.path.join(true_image_dir, 'all_10000', 'train')
         all_global = calc_fid(syn_all_path, true_global_path)
         for client_id in range(0, 5):
             print(f'trying client id: {client_id}')
@@ -146,7 +146,6 @@ def calc_privacy2_dict(checkpoints):
             res[f'global_test_client_{client_id}'] = calc_privacy2(syn_local_path, test_global_path, idx_1 = list(range(0, 1000)))
             res[f'train_test_ratio_client_{client_id}'] = res[f'global_test_client_{client_id}'] / res[f'other_train_client_{client_id}'].clip(min=1e-6)
             res[f'local_other_ratio_client_{client_id}'] = res[f'other_train_client_{client_id}'] / res[f'local_train_client_{client_id}'].clip(min=1e-6)
-            # res[f'local_train_ratio_client_{client_id}'] = calc_privacy2(syn_local_path, train_local_path, idx_1 = list(range(0, 1000)))
             for k in res.keys():
                 rep[k] = res[k].mean()
         keys = sorted(list(set(['_'.join(k.split('_')[:-1]) for k in rep.keys()])))
@@ -187,19 +186,19 @@ def main():
     
     # print(f'loaded server')
     
-    ckpt_dir = f'/home/server33/minyeong_workspace/FL-bench/out_cifar10_niid3_vqfedlr_trial1/FedDiff/checkpoints'
-    files = sorted(list(set([int(f.split('_')[2]) for f in os.listdir(ckpt_dir) ])))
-    ckpt_name_list = [os.path.join(ckpt_dir, f"cifar10_niid3_{f}_custom") for f in files if (f >= 300) and (f <= 390)]
+    ckpt_dir = f'/home/server33/minyeong_workspace/FL-bench/out_femnist_niid_vqfed_trial1/FedDiff/checkpoints'
+    files = sorted(list(set([int(f.split('_')[1]) for f in os.listdir(ckpt_dir) ])))
+    ckpt_name_list = [os.path.join(ckpt_dir, f"femnist_{f}_custom") for f in files if (f <= 50) and (f % 10 == 0)]
     
     # print(f'ckpt_name_list: {ckpt_name_list}')
     # while True:
     #     continue
     
-    for ckpt_name in ckpt_name_list:
-        server = load_models(server_class, args, ckpt_name)
-        log = server.calc_fid(int(os.path.basename(ckpt_name).split('_')[2]))
-        todo(os.path.join(image_fid_dir, f'{int(os.path.basename(ckpt_name).split("_")[2])}'), N=50000)
-        print(f'{log}')
+    # for ckpt_name in ckpt_name_list:
+    #     server = load_models(server_class, args, ckpt_name)
+    #     log = server.calc_fid(int(os.path.basename(ckpt_name).split('_')[1]))
+    #     todo(os.path.join(image_fid_dir, f'{int(os.path.basename(ckpt_name).split("_")[1])}'), N=10000)
+    #     print(f'{log}')
     
     
     # cifar_src_path = '/home/server33/minyeong_workspace/ddpm-torch/images/eval/cifar10/cifar10_2040_ddim'
@@ -214,13 +213,13 @@ def main():
 
     
     fid_dict = calc_fid_dict(ckpt_name_list)
-    with open(f'tested_fid_vqfedlr_cifar10_niid3_client_{CID}.pkl', 'wb') as f:
+    with open(f'tested_fid_vqfed_femnist_iid_client_{CID}.pkl', 'wb') as f:
         pkl.dump(fid_dict, f)
 
         
     # privacy_dict = calc_privacy_dict(ckpt_name_list)
     # with open(f'tested_privacy_fed_class0_client_{CID}.pkl', 'wb') as f:
-    #     pkl.dump(privacy_dict, f)g
+    #     pkl.dump(privacy_dict, f)
 
     # privacy_dict = calc_privacy2_dict(ckpt_name_list)
     # with open(f'tested_privacy2_vqfedlr_cifar10_niid3_client_{CID}.pkl', 'wb') as f:
