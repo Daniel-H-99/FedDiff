@@ -227,7 +227,7 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("-cfg", "--config_file", type=str, default="")
     parser.add_argument("--check_convergence", type=int, default=1)
     parser.add_argument("--personal_tag", type=str, default=None)
-    parser.add_argument("--ckpt", type=str, default=None)
+    parser.add_argument("--ckpt", type=str, default='/home/server36/minyeong_workspace/FL-bench/out_femnist_niid_localcode120160_trial1/FedDiff/checkpoints/femnist_240_custom')
     return parser
 
 
@@ -261,11 +261,11 @@ class FedDiffServer:
                 partition = pickle.load(f)
         except:
             raise FileNotFoundError(f"Please partition {args.dataset} first.")
-        self.train_clients: List[int] = partition["separation"]["train"][20:40]
-        self.test_clients: List[int] = partition["separation"]["test"][20:40]
+        self.train_clients: List[int] = partition["separation"]["train"][120:160]
+        self.test_clients: List[int] = partition["separation"]["test"][120:160]
 
         # self.client_num: int = partition["separation"]["total"]
-        self.client_num: int = 20
+        self.client_num: int = 40
 
         # init model(s) parameters
         self.device = get_best_device(self.args.use_cuda)
@@ -334,11 +334,12 @@ class FedDiffServer:
             random.shuffle(self.clients_local_epoch)
 
 
-        self.NUM_TRAINER = 7
-        self.NUM_GPU = 7
+        self.NUM_TRAINER = 8
+        self.NUM_GPU = 8
         
         # To make sure all algorithms run through the same client sampling stream.
         # Some algorithms' implicit operations at client side may disturb the stream if sampling happens at each FL round's beginning.
+
         self.client_sample_stream = [
             random.sample(
                 self.train_clients, max(1, int(self.client_num))
@@ -347,7 +348,7 @@ class FedDiffServer:
         ]
         self.max_cnt = (375 - torch.arange(self.NUM_TRAINER)) // self.NUM_TRAINER
         self.selected_clients: List[int] = []
-        self.current_epoch = 0
+        self.current_epoch = 240
         # For controlling behaviors of some specific methods while testing (not used by all methods)
         self.test_flag = False
 
@@ -453,7 +454,7 @@ class FedDiffServer:
         self.proc = None
             
     def get_epoch(self, f):
-        return int(f.split('_')[2])
+        return int(f.split('_')[1])
     
     def update_last_optimizer_checkpoint(self, save_dir):
         opt_checkpoints = [f for f in os.listdir(save_dir) if 'opt' in f]

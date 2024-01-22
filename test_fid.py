@@ -13,14 +13,14 @@ from scripts.gather_gen_images import todo
 import argparse
 sys.path.append(Path(__file__).parent.joinpath("src/server").absolute().as_posix())
 
-# image_fid_dir = '/home/server33/minyeong_workspace/FL-bench/images_fid'
-# image_fid_dir = '/home/server33/minyeong_workspace/FL-bench/tmp_vqfed'
-image_fid_dir = '/home/server33/minyeong_workspace/FL-bench/out_femnist_niid_vqfed_trial1/FedDiff/images_fid'
-true_image_dir = '/home/server33/minyeong_workspace/FL-bench/data/femnist/raw'
+# image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/images_fid'
+# image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/tmp_localcode'
+image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/out_femnist_niid_localcode120160_trial1/FedDiff/images_fid'
+true_image_dir = '/home/server36/minyeong_workspace/FL-bench/data/femnist/raw'
 
 CID=0
 def init_wandb():
-    wandb.init(project='v2_fid', name=f'vqfed_femnist_niid_client{CID}')
+    wandb.init(project='v2_fid', name=f'localcode_femnist_niid_client{CID}')
     
 def load_models(cls, args, ckpt_name):
     args.ckpt = ckpt_name
@@ -186,25 +186,25 @@ def main():
     
     # print(f'loaded server')
     
-    ckpt_dir = f'/home/server33/minyeong_workspace/FL-bench/out_femnist_niid_vqfed_trial1/FedDiff/checkpoints'
+    ckpt_dir = f'/home/server36/minyeong_workspace/FL-bench/out_femnist_niid_localcode120160_trial1/FedDiff/checkpoints'
     files = sorted(list(set([int(f.split('_')[1]) for f in os.listdir(ckpt_dir) ])))
-    ckpt_name_list = [os.path.join(ckpt_dir, f"femnist_{f}_custom") for f in files if (f <= 50) and (f % 10 == 0)]
+    ckpt_name_list = [os.path.join(ckpt_dir, f"femnist_{f}_custom") for f in files if (f >= 240) and (f <= 380)]
     
     # print(f'ckpt_name_list: {ckpt_name_list}')
     # while True:
     #     continue
     
-    # for ckpt_name in ckpt_name_list:
-    #     server = load_models(server_class, args, ckpt_name)
-    #     log = server.calc_fid(int(os.path.basename(ckpt_name).split('_')[1]))
-    #     todo(os.path.join(image_fid_dir, f'{int(os.path.basename(ckpt_name).split("_")[1])}'), N=10000)
-    #     print(f'{log}')
+    for ckpt_name in ckpt_name_list:
+        server = load_models(server_class, args, ckpt_name)
+        log = server.calc_fid(int(os.path.basename(ckpt_name).split('_')[1]))
+        todo(os.path.join(image_fid_dir, f'{int(os.path.basename(ckpt_name).split("_")[1])}'), N=10000)
+        print(f'{log}')
     
     
-    # cifar_src_path = '/home/server33/minyeong_workspace/ddpm-torch/images/eval/cifar10/cifar10_2040_ddim'
-    # # cifar_src_path = '/home/server33/minyeong_workspace/ddpm-torch/tmp'
-    # # cifar_tgt_path = '/home/server33/minyeong_workspace/FL-bench/data/cifar10/raw/all/train'
-    # cifar_tgt_path = '/home/server33/minyeong_workspace/FL-bench/data/cifar10/raw/_all/train'
+    # cifar_src_path = '/home/server36/minyeong_workspace/ddpm-torch/images/eval/cifar10/cifar10_2040_ddim'
+    # # cifar_src_path = '/home/server36/minyeong_workspace/ddpm-torch/tmp'
+    # # cifar_tgt_path = '/home/server36/minyeong_workspace/FL-bench/data/cifar10/raw/all/train'
+    # cifar_tgt_path = '/home/server36/minyeong_workspace/FL-bench/data/cifar10/raw/_all/train'
     # fid_dict = calc_fid_dict_external(cifar_src_path, cifar_tgt_path)
 
     # with open(f'tested_fid_fed_cifar10_client.pkl', 'wb') as f:
@@ -213,7 +213,7 @@ def main():
 
     
     fid_dict = calc_fid_dict(ckpt_name_list)
-    with open(f'tested_fid_vqfed_femnist_iid_client_{CID}.pkl', 'wb') as f:
+    with open(f'tested_fid_localcode120160_femnist_iid_client_{CID}.pkl', 'wb') as f:
         pkl.dump(fid_dict, f)
 
         
@@ -222,7 +222,7 @@ def main():
     #     pkl.dump(privacy_dict, f)
 
     # privacy_dict = calc_privacy2_dict(ckpt_name_list)
-    # with open(f'tested_privacy2_vqfedlr_cifar10_niid3_client_{CID}.pkl', 'wb') as f:
+    # with open(f'tested_privacy2_localcodelr_cifar10_niid3_client_{CID}.pkl', 'wb') as f:
     #     pkl.dump(privacy_dict, f)
         
     print(f'done')
@@ -231,7 +231,7 @@ def main():
 
 # def task_checkpoint(ckpt_name, client_id=0):
 #     label_dist = {}
-#     with open('/home/server33/minyeong_workspace/FL-bench/data/pathmnist/all_stats.json', 'r') as f:
+#     with open('/home/server36/minyeong_workspace/FL-bench/data/pathmnist/all_stats.json', 'r') as f:
 #         d = json.load(f)
 #         for k, v in d.items():
 #             if k == 'sample per client':
@@ -244,9 +244,9 @@ def main():
 #     # print(f'dist 0: {label_dist[0]}')
 #     label_dist = label_dist
 #     base, eval, img_dir = export_trainer(device='cuda', eval_device='cuda', eval_total_size=3000)
-#     # fid_adv = eval.eval(base.sample_fn, self.label_dist[self.client_id], [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, adv=True)['fid'][0]
-#     fid_local = eval.eval(base.sample_fn, label_dist[client_id], [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist_client{client_id}.npz'], is_leader=True)['fid'][0]
-#     # fid_global = self.model.evaluator.eval(self.model.base.sample_fn, np.ones_like(self.label_dist[self.client_id]) / len(self.label_dist[self.client_id]), [f'/home/server33/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist.npz'], is_leader=True)['fid'][0]
+#     # fid_adv = eval.eval(base.sample_fn, self.label_dist[self.client_id], [f'/home/server36/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist_client{self.client_id}.npz'], is_leader=True, adv=True)['fid'][0]
+#     fid_local = eval.eval(base.sample_fn, label_dist[client_id], [f'/home/server36/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist_client{client_id}.npz'], is_leader=True)['fid'][0]
+#     # fid_global = self.model.evaluator.eval(self.model.base.sample_fn, np.ones_like(self.label_dist[self.client_id]) / len(self.label_dist[self.client_id]), [f'/home/server36/minyeong_workspace/FL-bench/data/pathmnist/fid_stats_pathmnist.npz'], is_leader=True)['fid'][0]
 
 #     # eval_results = [fid_local, fid_global, fid_adv]
 #     print(f'evaluated local fid: {fid_local}')
