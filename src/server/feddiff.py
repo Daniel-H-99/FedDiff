@@ -204,7 +204,7 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("-le", "--local_epoch", type=int, default=1)
     parser.add_argument("-fe", "--finetune_epoch", type=int, default=0)
     parser.add_argument("-tg", "--valid_gap", type=int, default=10000)
-    parser.add_argument("-eg", "--test_gap", type=int, default=1)
+    parser.add_argument("-eg", "--test_gap", type=int, default=10000)
     parser.add_argument("-ee", "--eval_test", type=int, default=1)
     parser.add_argument("-er", "--eval_train", type=int, default=0)
     parser.add_argument("-lr", "--local_lr", type=float, default=1e-3)
@@ -222,12 +222,12 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("--save_model", type=int, default=0)
     parser.add_argument("--save_fig", type=int, default=1)
     parser.add_argument("--save_metrics", type=int, default=1)
-    parser.add_argument("--save_gap", type=int, default=5)
+    parser.add_argument("--save_gap", type=int, default=1)
     parser.add_argument("--viz_win_name", type=str, required=False)
     parser.add_argument("-cfg", "--config_file", type=str, default="")
     parser.add_argument("--check_convergence", type=int, default=1)
     parser.add_argument("--personal_tag", type=str, default=None)
-    parser.add_argument("--ckpt", type=str, default='/home/server31/minyeong_workspace/FL-bench/out_cifar10_iid_local_trial1/FedDiff/checkpoints/cifar10_iid_85_custom')
+    parser.add_argument("--ckpt", type=str, default=None)
     return parser
 
 
@@ -261,11 +261,11 @@ class FedDiffServer:
                 partition = pickle.load(f)
         except:
             raise FileNotFoundError(f"Please partition {args.dataset} first.")
-        self.train_clients: List[int] = partition["separation"]["train"][:5]
-        self.test_clients: List[int] = partition["separation"]["test"][:5]
+        self.train_clients: List[int] = partition["separation"]["train"][20:40]
+        self.test_clients: List[int] = partition["separation"]["test"][20:40]
 
         # self.client_num: int = partition["separation"]["total"]
-        self.client_num: int = 5
+        self.client_num: int = 20
 
         # init model(s) parameters
         self.device = get_best_device(self.args.use_cuda)
@@ -318,7 +318,8 @@ class FedDiffServer:
 
 
         # system heterogeneity (straggler) setting
-        self.clients_local_epoch: List[int] = [self.args.local_epoch] * self.client_num
+        # self.clients_local_epoch: List[int] = [self.args.local_epoch] * self.client_num
+        self.clients_local_epoch: Dict[int] = {k: self.args.local_epoch for k in self.train_clients}
         if (
             self.args.straggler_ratio > 0
             and self.args.local_epoch > self.args.straggler_min_local_epoch
@@ -334,7 +335,7 @@ class FedDiffServer:
             random.shuffle(self.clients_local_epoch)
 
 
-        self.NUM_TRAINER = 5
+        self.NUM_TRAINER = 8
         self.NUM_GPU = 8
         
         # To make sure all algorithms run through the same client sampling stream.
@@ -347,7 +348,7 @@ class FedDiffServer:
             for _ in range(self.args.global_epoch)
         ]
         self.selected_clients: List[int] = []
-        self.current_epoch = 85
+        self.current_epoch = 0
         # For controlling behaviors of some specific methods while testing (not used by all methods)
         self.test_flag = False
 
@@ -453,7 +454,7 @@ class FedDiffServer:
         self.proc = None
             
     def get_epoch(self, f):
-        return int(f.split('_')[2])
+        return int(f.split('_')[1])
     
     def update_last_optimizer_checkpoint(self, save_dir):
         opt_checkpoints = [f for f in os.listdir(save_dir) if 'opt' in f]
@@ -540,6 +541,7 @@ class FedDiffServer:
 
     def generate_task(self, client_ids):
         tasks = [(self.trainers[i], [], [], [], ((self.current_epoch + 1) % self.args.verbose_gap) == 0, self.current_epoch) for i in range(len(self.trainers))]
+
         for cid in client_ids:
             tasks[self.client_location(cid)][1].append(self.generate_client_params(cid))
             tasks[self.client_location(cid)][2].append(cid)
