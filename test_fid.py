@@ -15,12 +15,12 @@ sys.path.append(Path(__file__).parent.joinpath("src/server").absolute().as_posix
 
 # image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/images_fid'
 # image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/tmp_phoenix'
-image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/out_cifar10_niid3_localcode_trial1/FedDiff/images_fid'
+image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/out_cifar10_niid3_vqfedtune_trial1/FedDiff/images_fid'
 true_image_dir = '/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid3/raw'
 
 CID=0
 def init_wandb():
-    wandb.init(project='v2_privacy', name=f'localcode75_cifar10_niid3_client{CID}')
+    wandb.init(project='v2_privacy', name=f'vqfedtune210_cifar10_niid3_client{CID}')
     
 def load_models(cls, args, ckpt_name):
     args.ckpt = ckpt_name
@@ -84,7 +84,7 @@ def calc_fid_dict(checkpoints):
             syn_local_path = os.path.join(image_fid_dir, f'{epoch}', 'local', f'{client_id}')
             true_local_path = os.path.join(true_image_dir, f'{client_id}', 'train')
             syn_global_path = os.path.join(image_fid_dir, f'{epoch}', 'global', f'{client_id}')
-            # res[f'local_local_client_{client_id}'] = calc_fid(syn_local_path, true_local_path)
+            res[f'local_local_client_{client_id}'] = calc_fid(syn_local_path, true_local_path)
             # res[f'local_global_client_{client_id}'] = calc_fid(syn_local_path, true_global_path)
             # res[f'global_global_client_{client_id}'] = calc_fid(syn_all_path, true_global_path)
             # res[f'global_global_client_{client_id}'] = calc_fid(syn_global_path, true_global_path)
@@ -187,9 +187,9 @@ def main():
     
     # print(f'loaded server')
     
-    ckpt_dir = f'/home/server36/minyeong_workspace/FL-bench/out_cifar10_niid3_localcode_trial1/FedDiff/checkpoints'
+    ckpt_dir = f'/home/server36/minyeong_workspace/FL-bench/out_cifar10_niid3_vqfedtune_trial1/FedDiff/checkpoints'
     files = sorted(list(set([int(f.split('_')[2]) for f in os.listdir(ckpt_dir) ])))
-    ckpt_name_list = [os.path.join(ckpt_dir, f"cifar10_niid3_{f}_custom") for f in files if f == 75]
+    ckpt_name_list = [os.path.join(ckpt_dir, f"cifar10_niid3_{f}_custom") for f in files if f == 210]
     
     # print(f'ckpt_name_list: {ckpt_name_list}')
     # while True:
@@ -214,7 +214,7 @@ def main():
 
     
     # fid_dict = calc_fid_dict(ckpt_name_list)
-    # with open(f'tested_fid_localcode_cifar10_niid3_client_{CID}.pkl', 'wb') as f:
+    # with open(f'tested_fid_vqfedtune210_cifar10_niid3_client_{CID}.pkl', 'wb') as f:
     #     pkl.dump(fid_dict, f)
 
         
@@ -223,7 +223,7 @@ def main():
     #     pkl.dump(privacy_dict, f)
 
     privacy_dict = calc_privacy2_dict(ckpt_name_list)
-    with open(f'tested_privacy2_localcode_75_cifar10_niid3_client_{CID}.pkl', 'wb') as f:
+    with open(f'tested_privacy2_vqfedtune_210_cifar10_niid3_client_{CID}.pkl', 'wb') as f:
         pkl.dump(privacy_dict, f)
         
     print(f'done')

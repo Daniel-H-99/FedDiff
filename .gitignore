@@ -1,3 +1,4 @@
+data/*mnist
 data/*.npz
 data/_femnist
 data/femnist
