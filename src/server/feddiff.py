@@ -204,7 +204,7 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("-le", "--local_epoch", type=int, default=1)
     parser.add_argument("-fe", "--finetune_epoch", type=int, default=0)
     parser.add_argument("-tg", "--valid_gap", type=int, default=10000)
-    parser.add_argument("-eg", "--test_gap", type=int, default=100000)
+    parser.add_argument("-eg", "--test_gap", type=int, default=5)
     parser.add_argument("-ee", "--eval_test", type=int, default=1)
     parser.add_argument("-er", "--eval_train", type=int, default=0)
     parser.add_argument("-lr", "--local_lr", type=float, default=2e-4)
@@ -222,12 +222,12 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("--save_model", type=int, default=0)
     parser.add_argument("--save_fig", type=int, default=1)
     parser.add_argument("--save_metrics", type=int, default=1)
-    parser.add_argument("--save_gap", type=int, default=20)
+    parser.add_argument("--save_gap", type=int, default=5)
     parser.add_argument("--viz_win_name", type=str, required=False)
     parser.add_argument("-cfg", "--config_file", type=str, default="")
     parser.add_argument("--check_convergence", type=int, default=1)
     parser.add_argument("--personal_tag", type=str, default=None)
-    parser.add_argument("--ckpt", type=str, default='/home/server36/minyeong_workspace/FL-bench/out_femnist_niid_localcode120160_trial1/FedDiff/checkpoints/femnist_240_custom')
+    parser.add_argument("--ckpt", type=str, default=None)
     return parser
 
 
@@ -261,11 +261,11 @@ class FedDiffServer:
                 partition = pickle.load(f)
         except:
             raise FileNotFoundError(f"Please partition {args.dataset} first.")
-        self.train_clients: List[int] = partition["separation"]["train"][120:160]
-        self.test_clients: List[int] = partition["separation"]["test"][120:160]
+        self.train_clients: List[int] = partition["separation"]["train"][:5]
+        self.test_clients: List[int] = partition["separation"]["test"][:5]
 
         # self.client_num: int = partition["separation"]["total"]
-        self.client_num: int = 40
+        self.client_num: int = 5
 
         # init model(s) parameters
         self.device = get_best_device(self.args.use_cuda)
@@ -318,7 +318,7 @@ class FedDiffServer:
 
 
         # system heterogeneity (straggler) setting
-        self.clients_local_epoch: Dict[int] = {v: self.args.local_epoch for v in self.train_clients}
+        self.clients_local_epoch: List[int] = [self.args.local_epoch] * self.client_num
         if (
             self.args.straggler_ratio > 0
             and self.args.local_epoch > self.args.straggler_min_local_epoch
@@ -334,21 +334,20 @@ class FedDiffServer:
             random.shuffle(self.clients_local_epoch)
 
 
-        self.NUM_TRAINER = 8
+        self.NUM_TRAINER = 5
         self.NUM_GPU = 8
         
         # To make sure all algorithms run through the same client sampling stream.
         # Some algorithms' implicit operations at client side may disturb the stream if sampling happens at each FL round's beginning.
-
         self.client_sample_stream = [
             random.sample(
-                self.train_clients, max(1, int(self.client_num))
+                self.train_clients, max(1, len(self.train_clients))
+                # self.train_clients, max(1, int(self.client_num * self.args.join_ratio))
             )
             for _ in range(self.args.global_epoch)
         ]
-        self.max_cnt = (375 - torch.arange(self.NUM_TRAINER)) // self.NUM_TRAINER
         self.selected_clients: List[int] = []
-        self.current_epoch = 240
+        self.current_epoch = 0
         # For controlling behaviors of some specific methods while testing (not used by all methods)
         self.test_flag = False
 
@@ -454,7 +453,7 @@ class FedDiffServer:
         self.proc = None
             
     def get_epoch(self, f):
-        return int(f.split('_')[1])
+        return int(f.split('_')[2])
     
     def update_last_optimizer_checkpoint(self, save_dir):
         opt_checkpoints = [f for f in os.listdir(save_dir) if 'opt' in f]

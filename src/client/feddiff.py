@@ -119,8 +119,8 @@ class FedDiffClient:
 
         label_dist = {}
 
-        for k in range(376):
-            dist = np.zeros(62)
+        for k in range(5):
+            dist = np.zeros(10)
             # for _k, _v in v['y'].items():
             #     dist[int(_k)] = _v
             # dist = dist / dist.sum()
@@ -195,15 +195,14 @@ class FedDiffClient:
     def load_train_dataset(self, e):
         """This function is for loading data indices for No.`self.client_id` client."""
         all_indices = np.concatenate([self.data_indices[self.client_id]["train"], self.data_indices[self.client_id]["test"]])
-        self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
-        self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
-        # self.trainset.indices = all_indices[:-2000]
-        # self.testset.indices = all_indices[-2000:]
+        # self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
+        # self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
+        self.trainset.indices = all_indices[:-2000]
+        self.testset.indices = all_indices[-2000:]
           
-        full_size = len(self.trainset.indices)
-        L = full_size * 20
+        L = 128 * 400
         st = (L * e) % len(self.trainset.indices)
-        self.trainset.indices = np.concatenate([self.trainset.indices] * 21)[st: st + L]
+        self.trainset.indices = np.concatenate([self.trainset.indices] * 12)[st: st + L]
     
         # self.trainset.indices = self.train_idc[self.client_id]
         # self.testset.indices = self.test_idc[self.client_id]
@@ -216,10 +215,10 @@ class FedDiffClient:
     def load_dataset(self):
         """This function is for loading data indices for No.`self.client_id` client."""
         all_indices = np.concatenate([self.data_indices[self.client_id]["train"], self.data_indices[self.client_id]["test"]])
-        self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
-        self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
-        # self.trainset.indices = all_indices[:-1000]
-        # self.testset.indices = all_indices[-1000:]
+        # self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
+        # self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
+        self.trainset.indices = all_indices[:-2000]
+        self.testset.indices = all_indices[-2000:]
     
     
         # self.trainset.indices = self.train_idc[self.client_id]
@@ -327,11 +326,11 @@ class FedDiffClient:
 
         if True:
             w = self.model.base.model.private_context_generator.codebook.weight
-            w0 = torch.tensor(np.load(f'/home/server36/minyeong_workspace/FL-bench/data/femnist/raw/vq_centroid_client{self.client_id}.npy'))
-            num_code = torch.tensor(np.load(f'/home/server36/minyeong_workspace/FL-bench/data/femnist/raw/vq_centroid_num_client{self.client_id}.npy'))
+            w0 = torch.tensor(np.load(f'/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid3/raw/vq_centroid_client{self.client_id}.npy'))
+            # num_code = torch.tensor(np.load(f'/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid3/raw/vq_centroid_num_client{self.client_id}.npy'))
             with torch.no_grad():
                 w.copy_(w0)
-            self.model.base.model.private_context_generator.num_code = num_code
+            self.model.base.model.private_context_generator.num_code = 256
 
         # print(f'w type: {type(w)}')
         # while True:
@@ -381,9 +380,9 @@ class FedDiffClient:
         # 31it [00:00, 49.00it/s]opt state dict value types: [('step', <class 'torch.Tensor'>), ('exp_avg', <class 'torch.Tensor'>), ('exp_avg_sq', <class 'torch.Tensor'>)] 
         # while True:
         #     continue
-        # self.optimizer_to('cpu')
-        # self.opt_state_dict[self.client_id] = deepcopy(self.optimizer.state_dict())
-        # self.optimizer_to(self.device)
+        self.optimizer_to('cpu')
+        self.opt_state_dict[self.client_id] = deepcopy(self.optimizer.state_dict())
+        self.optimizer_to(self.device)
         # self.all_params_dict[self.client_id] = {
         #     key: param.clone().detach().cpu()
         #     for key, param in self.model.state_dict(keep_vars=True).items()
