@@ -849,6 +849,8 @@ DATASETS = {
     "mnist": MNIST,
     "mnist_niid2": MNIST,
     "pathmnist": PathMNIST,
+    "path": PathMNIST,
+    "path_niid": PathMNIST,
     "pathmnist_class0": PathMNIST,
     "InSTpathmnist": InSTPathMNIST,
     "emnist": EMNIST,

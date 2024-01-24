@@ -5,16 +5,28 @@ from tqdm import tqdm
 from imageio import imwrite
 
 def main():
-    root = '/home/server36/minyeong_workspace/FL-bench/data/organa/raw'
-    cid_list = list(range(5))
+    root = '/home/server36/minyeong_workspace/FL-bench/data/path_niid/raw'
+    cid_list = list(range(10))
     try:
-        indices = pkl.load(open('/home/server36/minyeong_workspace/FL-bench/data/organa/indices.pkl', 'rb'))
+        indices = pkl.load(open('/home/server36/minyeong_workspace/FL-bench/data/path_niid/indices.pkl', 'rb'))
     except:
-        partition = pkl.load(open('/home/server36/minyeong_workspace/FL-bench/data/organa/partition.pkl', 'rb'))
+        partition = pkl.load(open('/home/server36/minyeong_workspace/FL-bench/data/path_niid/partition.pkl', 'rb'))
         indices = {int(k) : np.concatenate([partition['data_indices'][int(k)]['train'], partition['data_indices'][int(k)]['test']]) for k in range(len(partition['data_indices']))}
     all_train_idx = []
     all_test_idx = []
     data = np.load(os.path.join(root, 'xdata.npy'))
+    total_num = len(data)
+    num_train = int(0.9 * total_num)
+    num_test = total_num - num_train
+    print(f'total data: {total_num}')
+    N = min(50000, num_train)
+    N_test = min(50000, num_test)
+    N_per_client = np.array([len(indices[k]) for k in cid_list])
+    portion = N_per_client / total_num
+    N_agg = [int(N * portion[k]) for k in cid_list]
+    N_agg[-1] = N - sum(N_agg[:-1])
+    N_agg_test = [int(N_test * portion[k]) for k in cid_list]
+    N_agg_test[-1] = N_test - sum(N_agg_test[:-1])
     
     for cid in cid_list:
         train_dir = os.path.join(root, f'{cid}', 'train')
@@ -30,17 +42,17 @@ def main():
         print(f'test_idx_list: {len(test_idx_list)}')
         # while True:
         #     continue
-        # for idx in tqdm(train_idx_list):
-        #     save_path = os.path.join(train_dir, '{:05d}.png'.format(idx))
-        #     imwrite(save_path, data[idx])
-        # for idx in tqdm(test_idx_list):
-        #     save_path = os.path.join(test_dir, '{:05d}.png'.format(idx))
-        #     imwrite(save_path, data[idx])
-        all_train_idx.append(np.random.permutation(train_idx_list)[:])
-        all_test_idx.append(np.random.permutation(test_idx_list)[:])
+        for idx in tqdm(train_idx_list):
+            save_path = os.path.join(train_dir, '{:05d}.png'.format(idx))
+            imwrite(save_path, data[idx])
+        for idx in tqdm(test_idx_list):
+            save_path = os.path.join(test_dir, '{:05d}.png'.format(idx))
+            imwrite(save_path, data[idx])
+        all_train_idx.append(np.random.permutation(train_idx_list)[:N_agg[cid]])
+        all_test_idx.append(np.random.permutation(test_idx_list)[:N_agg_test[cid]])
     
-    all_train_dir = os.path.join(root, 'all_50000', 'train')
-    all_test_dir = os.path.join(root, 'all_50000', 'test')
+    all_train_dir = os.path.join(root, f'all_{N}', 'train')
+    all_test_dir = os.path.join(root, f'all_{N}', 'test')
     os.makedirs(all_train_dir, exist_ok=True)
     os.makedirs(all_test_dir, exist_ok=True)
     all_train_idx = np.concatenate(all_train_idx)

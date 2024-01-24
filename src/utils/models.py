@@ -87,6 +87,7 @@ NUM_CLASSES = {
     "mnist_niid2": 10,
     "pathmnist": 9,
     "pathmnist_class0": 9,
+    "path_niid": 9,
     "medmnistS": 11,
     "medmnistC": 11,
     "medmnistA": 11,

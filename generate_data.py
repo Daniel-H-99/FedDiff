@@ -151,6 +151,7 @@ if __name__ == "__main__":
             "mnist",
             "mnist_niid2",
             "pathmnist",
+            "path",
             "cifar10",
             "cifar10_class",
             "cifar10_niid2",
