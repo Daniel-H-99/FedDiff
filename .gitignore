@@ -1,3 +1,4 @@
+data/organa*
 data/*mnist
 data/*.npz
 data/_femnist

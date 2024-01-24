@@ -263,7 +263,7 @@ class PathMNIST(BaseDataset):
         super().__init__()
         if not isinstance(root, Path):
             root = Path(root)
-        self.classes = list(range(11))
+        self.classes = list(range(9))
         self.data = torch.Tensor(np.load(root / "raw" / "xdata.npy")).float().permute(0, 3, 1, 2)
         self.targets = torch.Tensor(np.load(root / "raw" / "ydata.npy")).long().squeeze()
         self.classes = list(range(9))
@@ -568,6 +568,29 @@ class CIFAR10(BaseDataset):
         self.train_target_transform = train_target_transform
 
 
+class ORGANA(BaseDataset):
+    def __init__(
+        self,
+        root,
+        args=None,
+        general_data_transform=None,
+        general_target_transform=None,
+        train_data_transform=None,
+        train_target_transform=None,
+    ):
+        super().__init__()
+        if not isinstance(root, Path):
+            root = Path(root)
+        self.classes = list(range(10))
+        self.data = torch.Tensor(np.load(root / "raw" / "xdata.npy")).float().permute(0, 3, 1, 2)
+        self.targets = torch.Tensor(np.load(root / "raw" / "ydata.npy")).long().squeeze()
+        # self.targets = torch.zeros_like(torch.Tensor(np.load(root / "raw" / "ydata.npy"))).long().squeeze()
+        self.classes = list(range(10))
+        self.general_data_transform = general_data_transform
+        self.general_target_transform = general_target_transform
+        self.train_data_transform = train_data_transform
+        self.train_target_transform = train_target_transform
+        
 class CIFAR100(BaseDataset):
     def __init__(
         self,
@@ -820,6 +843,9 @@ DATASETS = {
     "cifar10_niid3": CIFAR10,
     "cifar10_iid": CIFAR10,
     "cifar100": CIFAR100,
+    "organa": ORGANA,
+    "organa_niid": ORGANA,
+    "chest": ORGANA,
     "mnist": MNIST,
     "mnist_niid2": MNIST,
     "pathmnist": PathMNIST,

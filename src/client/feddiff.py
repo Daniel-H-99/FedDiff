@@ -195,14 +195,14 @@ class FedDiffClient:
     def load_train_dataset(self, e):
         """This function is for loading data indices for No.`self.client_id` client."""
         all_indices = np.concatenate([self.data_indices[self.client_id]["train"], self.data_indices[self.client_id]["test"]])
-        # self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
-        # self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
-        self.trainset.indices = all_indices[:-2000]
-        self.testset.indices = all_indices[-2000:]
+        self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
+        self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
+        # self.trainset.indices = all_indices[:-2000]
+        # self.testset.indices = all_indices[-2000:]
           
         L = 128 * 400
         st = (L * e) % len(self.trainset.indices)
-        self.trainset.indices = np.concatenate([self.trainset.indices] * 12)[st: st + L]
+        self.trainset.indices = np.concatenate([self.trainset.indices] * 20)[st: st + L]
     
         # self.trainset.indices = self.train_idc[self.client_id]
         # self.testset.indices = self.test_idc[self.client_id]
@@ -215,10 +215,10 @@ class FedDiffClient:
     def load_dataset(self):
         """This function is for loading data indices for No.`self.client_id` client."""
         all_indices = np.concatenate([self.data_indices[self.client_id]["train"], self.data_indices[self.client_id]["test"]])
-        # self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
-        # self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
-        self.trainset.indices = all_indices[:-2000]
-        self.testset.indices = all_indices[-2000:]
+        self.trainset.indices = all_indices[:math.floor(len(all_indices) * 0.9)]
+        self.testset.indices = all_indices[math.floor(len(all_indices) * 0.9):]
+        # self.trainset.indices = all_indices[:-2000]
+        # self.testset.indices = all_indices[-2000:]
     
     
         # self.trainset.indices = self.train_idc[self.client_id]
@@ -326,7 +326,7 @@ class FedDiffClient:
 
         if True:
             w = self.model.base.model.private_context_generator.codebook.weight
-            w0 = torch.tensor(np.load(f'/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid3/raw/vq_centroid_client{self.client_id}.npy'))
+            w0 = torch.tensor(np.load(f'/home/server36/minyeong_workspace/FL-bench/data/organa_niid/raw/vq_centroid_client{self.client_id}.npy'))
             # num_code = torch.tensor(np.load(f'/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid3/raw/vq_centroid_num_client{self.client_id}.npy'))
             with torch.no_grad():
                 w.copy_(w0)

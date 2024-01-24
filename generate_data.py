@@ -155,6 +155,7 @@ if __name__ == "__main__":
             "cifar10_class",
             "cifar10_niid2",
             "cifar100",
+            "organa",
             "synthetic",
             "femnist",
             "emnist",
