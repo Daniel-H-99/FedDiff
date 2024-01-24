@@ -19,8 +19,8 @@ def main():
     num_train = int(0.9 * total_num)
     num_test = total_num - num_train
     print(f'total data: {total_num}')
-    N = min(50000, num_train)
-    N_test = min(50000, num_test)
+    N = min(5000, num_train)
+    N_test = min(5000, num_test)
     N_per_client = np.array([len(indices[k]) for k in cid_list])
     portion = N_per_client / total_num
     N_agg = [int(N * portion[k]) for k in cid_list]
@@ -42,12 +42,12 @@ def main():
         print(f'test_idx_list: {len(test_idx_list)}')
         # while True:
         #     continue
-        for idx in tqdm(train_idx_list):
-            save_path = os.path.join(train_dir, '{:05d}.png'.format(idx))
-            imwrite(save_path, data[idx])
-        for idx in tqdm(test_idx_list):
-            save_path = os.path.join(test_dir, '{:05d}.png'.format(idx))
-            imwrite(save_path, data[idx])
+        # for idx in tqdm(train_idx_list):
+        #     save_path = os.path.join(train_dir, '{:05d}.png'.format(idx))
+        #     imwrite(save_path, data[idx])
+        # for idx in tqdm(test_idx_list):
+        #     save_path = os.path.join(test_dir, '{:05d}.png'.format(idx))
+        #     imwrite(save_path, data[idx])
         all_train_idx.append(np.random.permutation(train_idx_list)[:N_agg[cid]])
         all_test_idx.append(np.random.permutation(test_idx_list)[:N_agg_test[cid]])
     

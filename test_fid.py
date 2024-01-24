@@ -15,12 +15,12 @@ sys.path.append(Path(__file__).parent.joinpath("src/server").absolute().as_posix
 
 # image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/images_fid'
 # image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/tmp_phoenix'
-image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/out_cifar10_iid_vqfedtune_trial1/FedDiff/images_fid'
-true_image_dir = '/home/server36/minyeong_workspace/FL-bench/data/cifar10_iid/raw'
+image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/out_organa_niid_vqfedtune_trial1/FedDiff/images_fid'
+true_image_dir = '/home/server36/minyeong_workspace/FL-bench/data/organa_niid/raw'
 
 CID=0
 def init_wandb():
-    wandb.init(project='v2_fid', name=f'vqfedtune205_cifar10_iid_client{CID}')
+    wandb.init(project='v2_fid', name=f'vqfedtune_organa_niid_client{CID}')
     
 def load_models(cls, args, ckpt_name):
     args.ckpt = ckpt_name
@@ -36,7 +36,7 @@ def calc_privacy(path_1, path_2):
                                             num_workers=8)
     return privacy
     
-def calc_privacy2(path_1, path_2, idx_1=None, idx_2=None):
+def calc_privacy2(path_1, path_2, idx_1=None, idx_2=None, ret_idx=False):
     
     privacy = calculate_privacy2_given_paths([path_1, path_2],
                                             batch_size=50,
@@ -44,7 +44,8 @@ def calc_privacy2(path_1, path_2, idx_1=None, idx_2=None):
                                             dims=2048,
                                             num_workers=8, 
                                             idx_1=idx_1,
-                                            idx_2=idx_2)
+                                            idx_2=idx_2,
+                                            ret_idx=ret_idx)
     return privacy
 
 
@@ -77,7 +78,7 @@ def calc_fid_dict(checkpoints):
         epoch = int(os.path.basename(ckpt).split('_')[2])
         output[epoch] = {}
         syn_all_path = os.path.join(image_fid_dir, f'{epoch}', 'local', 'all')
-        true_global_path = os.path.join(true_image_dir, 'all_50000', 'train')
+        true_global_path = os.path.join(true_image_dir, 'all_5000', 'train')
         all_global = calc_fid(syn_all_path, true_global_path)
         for client_id in range(0, 5):
             print(f'trying client id: {client_id}')
@@ -123,7 +124,7 @@ def calc_privacy_dict(checkpoints):
     return output
 
 def calc_privacy2_dict(checkpoints):
-    init_wandb()
+    # init_wandb()
     output = {}
     for ckpt in checkpoints:
         res = {}
@@ -141,19 +142,25 @@ def calc_privacy2_dict(checkpoints):
             # res[f'local_train_client_{client_id}'] = calc_privacy2(syn_local_path, train_local_path)
             # res[f'local_test_client_{client_id}'] = calc_privacy2(syn_local_path, test_local_path)
             # res[f'global_train_client_{client_id}'] = calc_privacy2(syn_global_path, train_global_path)
-            res[f'local_train_client_{client_id}'] = calc_privacy2(syn_local_path, train_local_path, idx_1 = list(range(0, 1000)))
-            res[f'other_train_client_{client_id}'] = calc_privacy2(syn_local_path, train_global_path, idx_1 = list(range(0, 1000)), idx_2=list(range(0, 10000 * client_id)) + list(range(10000 * (client_id + 1), 50000)))
-            res[f'global_test_client_{client_id}'] = calc_privacy2(syn_local_path, test_global_path, idx_1 = list(range(0, 1000)))
+            out = calc_privacy2(syn_local_path, train_local_path, idx_1 = list(range(0, 10)), ret_idx=True)
+            print(f'out type shape: {type(out[1])} {out[1].shape}')
+            res[f'local_train_client_{client_id}'], res[f'local_train_idx_client_{client_id}'] = out[0], out[1]
+            out = calc_privacy2(syn_local_path, train_global_path, idx_1 = list(range(0, 10)), idx_2=list(range(0, 10000 * client_id)) + list(range(10000 * (client_id + 1), 50000)), ret_idx=True)
+            res[f'other_train_client_{client_id}'], res[f'other_train_idx_client_{client_id}'] = out[0], out[1]
+            out = calc_privacy2(syn_local_path, test_global_path, idx_1 = list(range(0, 10)), ret_idx=True)
+            res[f'global_test_client_{client_id}'], res[f'global_test_idx_client_{client_id}'] = out[0], out[1]
             res[f'train_test_ratio_client_{client_id}'] = res[f'global_test_client_{client_id}'] / res[f'other_train_client_{client_id}'].clip(min=1e-6)
             res[f'local_other_ratio_client_{client_id}'] = res[f'other_train_client_{client_id}'] / res[f'local_train_client_{client_id}'].clip(min=1e-6)
+            # res[f'local_train_ratio_client_{client_id}'] = calc_privacy2(syn_local_path, train_local_path, idx_1 = list(range(0, 1000)))
             for k in res.keys():
-                rep[k] = res[k].mean()
+                if 'idx' not in k:
+                    rep[k] = res[k].mean()
         output[epoch] = res
         keys = sorted(list(set(['_'.join(k.split('_')[:-1]) for k in rep.keys()])))
         clients = list(range(5))
         for key in keys:
             rep[f'{key}_avg'] = np.array([rep[f'{key}_{cid}'] for cid in clients]).mean()
-        wandb.log(rep, step=epoch)
+        # wandb.log(rep, step=epoch)
 
     return output
 
@@ -187,9 +194,9 @@ def main():
     
     # print(f'loaded server')
     
-    ckpt_dir = f'/home/server36/minyeong_workspace/FL-bench/out_cifar10_iid_vqfedtune_trial1/FedDiff/checkpoints'
+    ckpt_dir = f'/home/server36/minyeong_workspace/FL-bench/out_organa_niid_vqfedtune_trial1/FedDiff/checkpoints'
     files = sorted(list(set([int(f.split('_')[2]) for f in os.listdir(ckpt_dir) ])))
-    ckpt_name_list = [os.path.join(ckpt_dir, f"cifar10_iid_{f}_custom") for f in files if f == 205]
+    ckpt_name_list = [os.path.join(ckpt_dir, f"organa_niid_{f}_custom") for f in files if f <= 220]
     
     # print(f'ckpt_name_list: {ckpt_name_list}')
     # while True:
@@ -214,16 +221,16 @@ def main():
 
     
     fid_dict = calc_fid_dict(ckpt_name_list)
-    with open(f'tested_fid_vqfedtune_cifar10_iid_client_{CID}.pkl', 'wb') as f:
+    with open(f'tested_fid_vqfedtune_organa_niid_client_{CID}.pkl', 'wb') as f:
         pkl.dump(fid_dict, f)
 
         
     # privacy_dict = calc_privacy_dict(ckpt_name_list)
     # with open(f'tested_privacy_fed_class0_client_{CID}.pkl', 'wb') as f:
-    #     pkl.dump(privacy_dict, f)
+    #     pkl.dump(privacy_dict, f)g
 
     # privacy_dict = calc_privacy2_dict(ckpt_name_list)
-    # with open(f'tested_privacy2_vqfedtune_cifar10_iid_client_{CID}.pkl', 'wb') as f:
+    # with open(f'tested_privacy_vqfedtune_organa_niid_client_{CID}.pkl', 'wb') as f:
     #     pkl.dump(privacy_dict, f)
         
     print(f'done')
