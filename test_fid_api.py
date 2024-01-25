@@ -182,7 +182,7 @@ def main():
     for ckpt_name in ckpt_name_list:
         server = load_models(server_class, args, ckpt_name)
         log = server.calc_fid(int(os.path.basename(ckpt_name).split('_')[2]))
-        todo(os.path.join(image_fid_dir, f'{int(os.path.basename(ckpt_name).split("_")[2])}'))
+        todo(os.path.join(image_fid_dir, f'{int(os.path.basename(ckpt_name).split("_")[2])}'), N=5000, N_client=5)
         # print(f'{log}')
     
     

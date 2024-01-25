@@ -6,7 +6,7 @@ from imageio import imwrite
 
 def main():
     root = '/home/server36/minyeong_workspace/FL-bench/data/path_niid/raw'
-    cid_list = list(range(10))
+    cid_list = list(range(5))
     try:
         indices = pkl.load(open('/home/server36/minyeong_workspace/FL-bench/data/path_niid/indices.pkl', 'rb'))
     except:
@@ -19,8 +19,8 @@ def main():
     num_train = int(0.9 * total_num)
     num_test = total_num - num_train
     print(f'total data: {total_num}')
-    N = min(5000, num_train)
-    N_test = min(5000, num_test)
+    N = min(50000, num_train)
+    N_test = min(50000, num_test)
     N_per_client = np.array([len(indices[k]) for k in cid_list])
     portion = N_per_client / total_num
     N_agg = [int(N * portion[k]) for k in cid_list]
@@ -51,20 +51,25 @@ def main():
         all_train_idx.append(np.random.permutation(train_idx_list)[:N_agg[cid]])
         all_test_idx.append(np.random.permutation(test_idx_list)[:N_agg_test[cid]])
     
-    all_train_dir = os.path.join(root, f'all_{N}', 'train')
-    all_test_dir = os.path.join(root, f'all_{N}', 'test')
+    all_train_dir = os.path.join(root, f'all_{50000}', 'train')
+    all_test_dir = os.path.join(root, f'all_{50000}', 'test')
     os.makedirs(all_train_dir, exist_ok=True)
     os.makedirs(all_test_dir, exist_ok=True)
+    train_client_freq = np.array([0] + [len(v) for v in all_train_idx])
+    test_client_freq = np.array([0] + [len(v) for v in all_test_idx])
+
     all_train_idx = np.concatenate(all_train_idx)
     all_test_idx = np.concatenate(all_test_idx)
     
-    for j, idx in tqdm(enumerate(all_train_idx)):
-        save_path = os.path.join(all_train_dir, '{:05d}.png'.format(j))
-        imwrite(save_path, data[idx])
-    for j, idx in tqdm(enumerate(all_test_idx)):
-        save_path = os.path.join(all_test_dir, '{:05d}.png'.format(j))
-        imwrite(save_path, data[idx])
-    
+    # for j, idx in tqdm(enumerate(all_train_idx)):
+    #     save_path = os.path.join(all_train_dir, '{:05d}.png'.format(j))
+    #     imwrite(save_path, data[idx])
+    np.save(os.path.join(all_train_dir, '..', 'train_freq.npy'), train_client_freq)
+    # for j, idx in tqdm(enumerate(all_test_idx)):
+    #     save_path = os.path.join(all_test_dir, '{:05d}.png'.format(j))
+    #     imwrite(save_path, data[idx])
+    np.save(os.path.join(all_test_dir, '..', 'test_freq.npy'), test_client_freq)
+
     print('done')
     
 
