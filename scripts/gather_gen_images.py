@@ -11,7 +11,7 @@ def todo(root=f'/home/server36/minyeong_workspace/FL-bench/images_fid/10', N=500
     os.makedirs(local_save_dir)
     
     all_local_files = []
-    freq_file = f'/home/server36/minyeong_workspace/FL-bench/data/organa_niid/raw/all_{N}/train_freq.npy'
+    freq_file = f'/home/server36/minyeong_workspace/FL-bench/data/path_niid/raw/all_{N}/train_freq.npy'
     num_samples_to_agg = np.load(freq_file)[1:]
     # try:
     #     indices = pkl.load(open('/home/server36/minyeong_workspace/FL-bench/data/organa_niid/indices.pkl', 'rb'))

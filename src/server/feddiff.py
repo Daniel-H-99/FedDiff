@@ -769,7 +769,7 @@ class FedDiffServer:
         id = self.wandb_pj.id
         # while True:
         #     print(f'checkpoint: {checkpoint}')
-        test_cmd = ['python', 'test_fid_api.py', 'feddiff', f'{checkpoint}', f'{save_dir}', f'{pj}', f'{id}', '-d', 'cifar10_niid3', '--join_ratio', '1.0']
+        test_cmd = ['python', 'test_fid_api.py', 'feddiff', f'{checkpoint}', f'{save_dir}', f'{pj}', f'{id}', '-d', 'path_niid', '--join_ratio', '1.0']
         self.proc = subprocess.Popen(args=test_cmd, stdout=self.stdout, stderr=self.stderr)
         # print(f'waiting')
         # self.proc.wait()
