@@ -119,8 +119,8 @@ class FedDiffClient:
 
         label_dist = {}
 
-        for k in range(5):
-            dist = np.zeros(10)
+        for k in range(10):
+            dist = np.zeros(9)
             # for _k, _v in v['y'].items():
             #     dist[int(_k)] = _v
             # dist = dist / dist.sum()
@@ -326,7 +326,7 @@ class FedDiffClient:
 
         if True:
             w = self.model.base.model.private_context_generator.codebook.weight
-            w0 = torch.tensor(np.load(f'/home/server36/minyeong_workspace/FL-bench/data/organa_niid/raw/vq_centroid_client{self.client_id}.npy'))
+            w0 = torch.tensor(np.load(f'/home/server36/minyeong_workspace/FL-bench/data/path_niid/raw/vq_centroid_client{self.client_id}.npy'))
             # num_code = torch.tensor(np.load(f'/home/server36/minyeong_workspace/FL-bench/data/cifar10_niid3/raw/vq_centroid_num_client{self.client_id}.npy'))
             with torch.no_grad():
                 w.copy_(w0)

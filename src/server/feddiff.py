@@ -175,6 +175,7 @@ def get_feddiff_argparser() -> ArgumentParser:
             "mnist_niid2",
             "pathmnist",
             "pathmnist_class0",
+            "path_niid",
             "cifar10",
             "cifar10_class0",
             "cifar10_niid2",
@@ -224,12 +225,12 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("--save_model", type=int, default=0)
     parser.add_argument("--save_fig", type=int, default=1)
     parser.add_argument("--save_metrics", type=int, default=1)
-    parser.add_argument("--save_gap", type=int, default=2)
+    parser.add_argument("--save_gap", type=int, default=5)
     parser.add_argument("--viz_win_name", type=str, required=False)
     parser.add_argument("-cfg", "--config_file", type=str, default="")
     parser.add_argument("--check_convergence", type=int, default=1)
     parser.add_argument("--personal_tag", type=str, default=None)
-    parser.add_argument("--ckpt", type=str, default='/home/server36/minyeong_workspace/FL-bench/out_organa_niid_vqfed_trial1/FedDiff/checkpoints/organa_niid_200_custom')
+    parser.add_argument("--ckpt", type=str, default=None)
     return parser
 
 
@@ -263,11 +264,11 @@ class FedDiffServer:
                 partition = pickle.load(f)
         except:
             raise FileNotFoundError(f"Please partition {args.dataset} first.")
-        self.train_clients: List[int] = partition["separation"]["train"][:5]
-        self.test_clients: List[int] = partition["separation"]["test"][:5]
+        self.train_clients: List[int] = partition["separation"]["train"][:10]
+        self.test_clients: List[int] = partition["separation"]["test"][:10]
 
         # self.client_num: int = partition["separation"]["total"]
-        self.client_num: int = 5
+        self.client_num: int = 10
 
         # init model(s) parameters
         self.device = get_best_device(self.args.use_cuda)
@@ -349,7 +350,7 @@ class FedDiffServer:
             for _ in range(self.args.global_epoch)
         ]
         self.selected_clients: List[int] = []
-        self.current_epoch = 200
+        self.current_epoch = 0
         # For controlling behaviors of some specific methods while testing (not used by all methods)
         self.test_flag = False
 

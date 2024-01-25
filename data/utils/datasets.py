@@ -265,7 +265,8 @@ class PathMNIST(BaseDataset):
             root = Path(root)
         self.classes = list(range(9))
         self.data = torch.Tensor(np.load(root / "raw" / "xdata.npy")).float().permute(0, 3, 1, 2)
-        self.targets = torch.Tensor(np.load(root / "raw" / "ydata.npy")).long().squeeze()
+        # self.targets = torch.Tensor(np.load(root / "raw" / "ydata.npy")).long().squeeze()
+        self.targets = torch.zeros_like(torch.Tensor(np.load(root / "raw" / "ydata.npy"))).long().squeeze()
         self.classes = list(range(9))
         self.general_data_transform = general_data_transform
         self.general_target_transform = general_target_transform
