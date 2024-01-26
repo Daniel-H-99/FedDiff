@@ -1,3 +1,5 @@
+FedDiff/
+scripts/clear_ckpt.py
 data/path_niid
 data/organa*
 data/*mnist

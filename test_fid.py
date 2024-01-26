@@ -15,12 +15,12 @@ sys.path.append(Path(__file__).parent.joinpath("src/server").absolute().as_posix
 
 # image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/images_fid'
 # image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/tmp_phoenix'
-image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/out_organa_niid_vqfedtune_trial1/FedDiff/images_fid'
+image_fid_dir = '/home/server36/minyeong_workspace/FL-bench/out_organa_niid_phoenixtune_trial1/FedDiff/images_fid'
 true_image_dir = '/home/server36/minyeong_workspace/FL-bench/data/organa_niid/raw'
 
 CID=0
 def init_wandb():
-    wandb.init(project='v2_privacy', name=f'vqfedtune218_organa_niid_client{CID}')
+    wandb.init(project='v2_privacy', name=f'phoenixtune101_organa_niid_client{CID}')
     
 def load_models(cls, args, ckpt_name):
     args.ckpt = ckpt_name
@@ -78,7 +78,7 @@ def calc_fid_dict(checkpoints):
         epoch = int(os.path.basename(ckpt).split('_')[2])
         output[epoch] = {}
         syn_all_path = os.path.join(image_fid_dir, f'{epoch}', 'local', 'all')
-        true_global_path = os.path.join(true_image_dir, 'all_5000', 'train')
+        true_global_path = os.path.join(true_image_dir, 'all_50000', 'train')
         all_global = calc_fid(syn_all_path, true_global_path)
         for client_id in range(0, 5):
             print(f'trying client id: {client_id}')
@@ -197,9 +197,9 @@ def main():
     
     # print(f'loaded server')
     
-    ckpt_dir = f'/home/server36/minyeong_workspace/FL-bench/out_organa_niid_vqfedtune_trial1/FedDiff/checkpoints'
+    ckpt_dir = f'/home/server36/minyeong_workspace/FL-bench/out_organa_niid_phoenixtune_trial1/FedDiff/checkpoints'
     files = sorted(list(set([int(f.split('_')[2]) for f in os.listdir(ckpt_dir) ])))
-    ckpt_name_list = [os.path.join(ckpt_dir, f"organa_niid_{f}_custom") for f in files if f == 218]
+    ckpt_name_list = [os.path.join(ckpt_dir, f"organa_niid_{f}_custom") for f in files if f == 101]
     
     # print(f'ckpt_name_list: {ckpt_name_list}')
     # while True:
@@ -208,7 +208,7 @@ def main():
     for ckpt_name in ckpt_name_list:
         server = load_models(server_class, args, ckpt_name)
         log = server.calc_fid(int(os.path.basename(ckpt_name).split('_')[2]))
-        todo(os.path.join(image_fid_dir, f'{int(os.path.basename(ckpt_name).split("_")[2])}'), N=5000, N_client=5)
+        todo(os.path.join(image_fid_dir, f'{int(os.path.basename(ckpt_name).split("_")[2])}'), N=50000, N_client=5)
         print(f'{log}')
     
     
@@ -223,18 +223,18 @@ def main():
 
 
     
-    # fid_dict = calc_fid_dict(ckpt_name_list)
-    # with open(f'tested_fid_vqfedtune218_organa_niid_client_{CID}.pkl', 'wb') as f:
-    #     pkl.dump(fid_dict, f)
+    fid_dict = calc_fid_dict(ckpt_name_list)
+    with open(f'tested_fid_phoenixtune101_organa_niid_client_{CID}.pkl', 'wb') as f:
+        pkl.dump(fid_dict, f)
 
         
     # privacy_dict = calc_privacy_dict(ckpt_name_list)
     # with open(f'tested_privacy_fed_class0_client_{CID}.pkl', 'wb') as f:
     #     pkl.dump(privacy_dict, f)g
 
-    privacy_dict = calc_privacy2_dict(ckpt_name_list)
-    with open(f'tested_privacy2_vqfedtune218_organa_niid_client_{CID}.pkl', 'wb') as f:
-        pkl.dump(privacy_dict, f)
+    # privacy_dict = calc_privacy2_dict(ckpt_name_list)
+    # with open(f'tested_privacy2_phoenixtune218_organa_niid_client_{CID}.pkl', 'wb') as f:
+    #     pkl.dump(privacy_dict, f)
         
     print(f'done')
 

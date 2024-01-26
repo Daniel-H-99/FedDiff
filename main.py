@@ -7,7 +7,7 @@ sys.path.append(Path(__file__).parent.joinpath("src/server").absolute().as_posix
 
 
 def wandb_init():
-    return wandb.init(project="organa", name="organa_niid_vqfedtune_trial1")
+    return wandb.init(project="organa", name="organa_niid_phoenixtune_trial1")
     
 
     
