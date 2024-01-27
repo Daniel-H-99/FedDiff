@@ -206,7 +206,7 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("-le", "--local_epoch", type=int, default=1)
     parser.add_argument("-fe", "--finetune_epoch", type=int, default=0)
     parser.add_argument("-tg", "--valid_gap", type=int, default=10000)
-    parser.add_argument("-eg", "--test_gap", type=int, default=1)
+    parser.add_argument("-eg", "--test_gap", type=int, default=5)
     parser.add_argument("-ee", "--eval_test", type=int, default=1)
     parser.add_argument("-er", "--eval_train", type=int, default=0)
     parser.add_argument("-lr", "--local_lr", type=float, default=2e-4)
@@ -224,12 +224,12 @@ def get_feddiff_argparser() -> ArgumentParser:
     parser.add_argument("--save_model", type=int, default=0)
     parser.add_argument("--save_fig", type=int, default=1)
     parser.add_argument("--save_metrics", type=int, default=1)
-    parser.add_argument("--save_gap", type=int, default=1)
+    parser.add_argument("--save_gap", type=int, default=5)
     parser.add_argument("--viz_win_name", type=str, required=False)
     parser.add_argument("-cfg", "--config_file", type=str, default="")
     parser.add_argument("--check_convergence", type=int, default=1)
     parser.add_argument("--personal_tag", type=str, default=None)
-    parser.add_argument("--ckpt", type=str, default='/home/server36/minyeong_workspace/FL-bench/out_organa_niid_phoenix_trial1/FedDiff/checkpoints/organa_niid_100_custom')
+    parser.add_argument("--ckpt", type=str, default='/home/server36/minyeong_workspace/FL-bench/out_organa_niid_localcode_trial1/FedDiff/checkpoints/organa_niid_200_custom')
     return parser
 
 
@@ -336,7 +336,7 @@ class FedDiffServer:
             random.shuffle(self.clients_local_epoch)
 
 
-        self.NUM_TRAINER = 4
+        self.NUM_TRAINER = 5
         self.NUM_GPU = 8
         
         # To make sure all algorithms run through the same client sampling stream.
@@ -349,7 +349,7 @@ class FedDiffServer:
             for _ in range(self.args.global_epoch)
         ]
         self.selected_clients: List[int] = []
-        self.current_epoch = 100
+        self.current_epoch = 200
         # For controlling behaviors of some specific methods while testing (not used by all methods)
         self.test_flag = False
 

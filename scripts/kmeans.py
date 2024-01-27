@@ -35,10 +35,10 @@ transform = transforms.Compose([
     transforms.Normalize(mean, std)]
 )
 
-data_path = 'data/organa/raw'
+data_path = 'data/path_niid/raw'
 xdata = np.load(os.path.join(data_path, 'xdata.npy'))
 ydata = np.load(os.path.join(data_path, 'ydata.npy'))
-parition = pkl.load(open('data/organa/partition.pkl', 'rb'))
+parition = pkl.load(open('data/path_niid/partition.pkl', 'rb'))
 indices = [np.concatenate([p['train'], p['test']]) for p in parition['data_indices']]
 train_indices = [idx[:int(0.9 * len(idx))] for idx in indices]
 print(f'x data shape: {xdata.shape}')
@@ -60,11 +60,13 @@ for cid, idx in tqdm(enumerate(train_indices)):
     N_MEANS = 256
     # N_MEANS = min(32, len(X))
     # centroids = np.zeros(32, X.shape[1])
-    np.save(f'{data_path}/vq_centroid_num_client{cid}.npy', N_MEANS)
+    # np.save(f'{data_path}/vq_centroid_num_client{cid}.npy', N_MEANS)
 
     kmeans = KMeans(n_clusters=N_MEANS, random_state=0, n_init="auto").fit(X)
+    labels = kmeans.labels_
     centroids = kmeans.cluster_centers_
-    np.save(f'{data_path}/vq_centroid_client{cid}.npy', centroids)
+    np.save(f'{data_path}/_vq_centroid_label_client{cid}.npy', labels)
+    # np.save(f'{data_path}/vq_centroid_client{cid}.npy', centroids)
 
 
 
